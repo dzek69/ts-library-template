@@ -25,7 +25,7 @@
     }
   },
   "main": "./dist/index.js",
-  "types": "./esm/index.d.js",
+  "types": "./esm/index.d.ts",
   "module": "./esm/index.js",
   "type": "module",
   "dependencies": {},
@@ -34,7 +34,7 @@
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-typescript": "^7.12.7",
     "@dzek69/eslint-config-base": "^2.0.0",
-    "@dzek69/eslint-config-typescript": "^0.2.2",
+    "@dzek69/eslint-config-typescript": "^0.2.3",
     "@typescript-eslint/eslint-plugin": "^4.11.1",
     "@typescript-eslint/parser": "^4.11.1",
     "eslint": "^7.14.0",

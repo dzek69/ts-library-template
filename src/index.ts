@@ -7,8 +7,9 @@ import { get } from "bottom-line-utils";
 import { dirname } from "./dirname/dirname.js";
 
 import Question from "./Question.js";
+import { migrate } from "./migrate.js";
 
-interface PackageJson {
+interface PackageJson extends Record<string, unknown> {
     name: string;
     version: string;
     repository?: string;
@@ -30,10 +31,6 @@ const extractProjectName = (givenPath: string) => {
     return path.normalize(givenPath).replace(/\\/g, "/").split("/").filter(v => v !== "..").join("/");
 };
 
-const migrate = async (/* options: Record<string, never>*/) => {
-    await new Promise(resolve => { setTimeout(resolve, 1); });
-};
-
 const INDENT = 2;
 
 type CopyList = Record<string, string>;
@@ -44,13 +41,13 @@ const copyList: CopyList = {
     "LICENSE": "template/LICENSE",
     "README.md": "template/README.md",
     "CHANGELOG.md": "template/CHANGELOG.md",
+    ".npmignore": "template/.REMOVE_THIS_npmignore",
+    ".gitignore": "template/.REMOVE_THIS_gitignore",
 
     "build-scripts": "build-scripts",
     "test": "test",
     ".editorconfig": ".editorconfig",
     ".eslintrc.json": ".eslintrc.json",
-    ".gitignore": ".gitignore",
-    ".npmignore": ".npmignore",
     "babel.config.cjs": "babel.config.cjs",
     "jest.config.cjs": "jest.config.cjs",
     "nodemon.json": "nodemon.json",
@@ -78,7 +75,6 @@ const copyList: CopyList = {
         try {
             pkg = JSON.parse(String(await fs.readFile(pkgPath))) as PackageJson;
             ver = get(pkg, ["libraryTemplate", "version"]) as string | undefined;
-            // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
             if (!ver) {
                 throw new Error("No version");
             }
@@ -96,11 +92,9 @@ const copyList: CopyList = {
             throw new Error("Target directory is not empty, no supported library found to upgrade.");
         }
 
-        await migrate(
-            // {
-            // targetDir, pkg, ver, thisPkg,
-            // }
-        );
+        await migrate({
+            targetDir, pkg, ver,
+        });
         return;
     }
     console.info("Creating new library");

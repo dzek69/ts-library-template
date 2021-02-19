@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
-## [0.0.1] - 2021-01-08
+## [3.0.0] - 2021-02-19
+### Added
+- migrations support
+- linting
+- docs
+### Fixed
+- esm code output
+
+## [0.0.2-beta.5 and earlier] - 2021-02-19
 ### Added
 - first version
+- migrations support
