@@ -32,6 +32,28 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.0.0",
+        nextVersion: "3.0.1",
+        aggresive: "compile.esm.after.mjs build script will be overwritten",
+        steps: [
+            {
+                name: "update eslint config",
+                fn: async (mig) => {
+                    await mig.upgradeDependency("@dzek69/eslint-config-typescript", "^0.2.4");
+                    await mig.yarn();
+                },
+            },
+            {
+                name: "fix compile.esm.after.mjs build script",
+                fn: async (mig) => {
+                    await mig.copy(
+                        "template/build-scripts/compile.esm.after.mjs", "build-scripts/compile.esm.after.mjs",
+                    );
+                },
+            },
+        ],
+    },
 ];
 
 export { migrationsConfig };

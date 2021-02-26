@@ -1,6 +1,6 @@
 {
   "name": "ts-library-template",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "license": "MIT",
   "scripts": {
     "test": "NODE_ENV=test jest",
@@ -41,7 +41,7 @@
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-typescript": "^7.12.7",
     "@dzek69/eslint-config-base": "^2.0.0",
-    "@dzek69/eslint-config-typescript": "^0.2.3",
+    "@dzek69/eslint-config-typescript": "^0.2.4",
     "@types/empty-dir": "^2.0.0",
     "@types/fs-extra": "^9.0.6",
     "@types/semver": "^7.3.4",

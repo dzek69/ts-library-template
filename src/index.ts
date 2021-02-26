@@ -43,8 +43,8 @@ const copyList: CopyList = {
     "CHANGELOG.md": "template/CHANGELOG.md",
     ".npmignore": "template/.REMOVE_THIS_npmignore",
     ".gitignore": "template/.REMOVE_THIS_gitignore",
+    "build-scripts": "template/build-scripts",
 
-    "build-scripts": "build-scripts",
     "test": "test",
     ".editorconfig": ".editorconfig",
     ".eslintrc.json": ".eslintrc.json",
