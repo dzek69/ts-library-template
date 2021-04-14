@@ -54,6 +54,30 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.0.1",
+        nextVersion: "3.0.2",
+        steps: [
+            {
+                name: "update typescript",
+                fn: async (mig) => {
+                    await mig.upgradeDependency("typescript", "^4.2.4");
+                },
+            },
+            {
+                name: "fix compile.esm.after.mjs build script",
+                fn: async (mig) => {
+                    await mig.upgradeDependency("typedoc", "^0.20.35");
+                },
+            },
+            {
+                name: "install dependencies",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
 export { migrationsConfig };

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.0.2] - 2021-04-14
+### Changed
+- updated typedoc and typescript
+
 ## [3.0.1] - 2021-02-26
 ### Changed
 - updated eslint config
