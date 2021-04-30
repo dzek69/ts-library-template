@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.0.3] - 2021-04-30
+### Changed
+- self: aggressive changes list should start with bullet point
+- lib: tsconfig overwrite-update, set `lib` field because some build ins are unavailable without them
+- lib: tsconfig update, uncommented everything, set all extra options to null
+- lib: tsconfig `noUnusedLocals` & `noUnusedParameters` should be false in all files
+- lib: tsconfig is now standard json to help with future safer updates
+- lib: added `.eslintrc.json` to `.npmignore`
+### Fixed
+- lib: added missing `compile.cjs.after.mjs` code which fixes cjs output code use
+- lib: added `babel-plugin-module-extension` dependency, which is required after updating one the deep deps
+
 ## [3.0.2] - 2021-04-14
 ### Changed
 - updated typedoc and typescript

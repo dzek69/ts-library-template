@@ -78,6 +78,49 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.0.2",
+        nextVersion: "3.0.3",
+        aggresive: "tsconfig files will be overwritten",
+        steps: [
+            {
+                name: "update tsconfig files",
+                fn: async (mig) => {
+                    await mig.copy("tsconfig.json", "tsconfig.json");
+                    await mig.copy("tsconfig.cjs.json", "tsconfig.cjs.json");
+                    await mig.copy("tsconfig.lint.json", "tsconfig.lint.json");
+                },
+            },
+            {
+                name: "update npmignore",
+                fn: async (mig) => {
+                    await mig.updateContents(".npmignore", (contents) => {
+                        return contents.trim() + "\n/.eslintrc.json\n";
+                    });
+                },
+            },
+            {
+                name: "update after cjs compile build script",
+                fn: async (mig) => {
+                    await mig.copy(
+                        "template/build-scripts/compile.cjs.after.mjs", "build-scripts/compile.cjs.after.mjs",
+                    );
+                },
+            },
+            {
+                name: "add babel-plugin-module-extension dev dependency",
+                fn: async (mig) => {
+                    await mig.addDevDependency("babel-plugin-module-extension", "^0.1.3");
+                },
+            },
+            {
+                name: "install dependencies",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
 export { migrationsConfig };

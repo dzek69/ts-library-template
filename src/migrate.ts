@@ -61,7 +61,7 @@ const aggressiveMessage = async (migrations: VersionMigration[]) => {
             + "or that library won't work after upgrading without further changes to the code. Please verify this list "
             + "of POTENTIAL POSSIBLE issues and accept the upgrade progress:",
     );
-    console.info(aggressive.map(a => a.trim()).join("\n"));
+    console.info(aggressive.map(a => "- " + a.trim()).join("\n"));
     console.info("");
 
     const q = new Question();
