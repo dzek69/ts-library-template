@@ -3,23 +3,11 @@
 import fs from "fs-extra";
 import path from "path";
 import isEmptyDir from "empty-dir";
-import { get } from "bottom-line-utils";
 import { dirname } from "./dirname/dirname.js";
 
 import Question from "./Question.js";
-import { migrate } from "./migrate.js";
-
-interface PackageJson extends Record<string, unknown> {
-    name: string;
-    version: string;
-    repository?: string;
-    author?: string;
-    libraryTemplate?: {
-        version: string;
-        language?: "typescript";
-        fixDefaultForCommonJS?: boolean;
-    };
-}
+import { migrate, migrateJsx } from "./migrate.js";
+import type { PackageJson } from "./types";
 
 const extractProjectName = (givenPath: string) => {
     if (givenPath === ".") {
@@ -58,6 +46,7 @@ const copyList: CopyList = {
 
 (async () => { // eslint-disable-line max-statements
     const argsDir = process.argv[2] || ".";
+    const argsJsx = (process.argv[3] === "--jsx") || false;
     const targetDir = path.resolve(argsDir);
 
     const thisDir = path.dirname(path.dirname(dirname));
@@ -70,31 +59,10 @@ const copyList: CopyList = {
     const pkgPath = path.join(targetDir, "package.json");
     const isEmpty = await isEmptyDir(targetDir);
     if (!isEmpty) {
-        let pkg, lang, ver,
-            rethrow = false;
-        try {
-            pkg = JSON.parse(String(await fs.readFile(pkgPath))) as PackageJson;
-            ver = get(pkg, ["libraryTemplate", "version"]) as string | undefined;
-            if (!ver) {
-                throw new Error("No version");
-            }
-
-            lang = get(pkg, ["libraryTemplate", "language"]) as string | undefined;
-            if (lang !== "typescript") {
-                rethrow = true;
-                throw new Error("Migration from js-library-template is currently not supported");
-            }
+        await migrate(targetDir);
+        if (argsJsx) {
+            await migrateJsx(targetDir);
         }
-        catch (e: unknown) {
-            if (rethrow) {
-                throw e;
-            }
-            throw new Error("Target directory is not empty, no supported library found to upgrade.");
-        }
-
-        await migrate({
-            targetDir, pkg, ver,
-        });
         return;
     }
     console.info("Creating new library");
@@ -111,10 +79,13 @@ const copyList: CopyList = {
     const project = await q.ask("Project name? [" + projectNameFromPath + "]");
     const version = await q.ask("Version? [0.0.1]");
     const repo = await q.ask("Repository URL? [NOT SET]");
+    const jsxAnswer = argsJsx ? "y" : await q.ask("React library? [no]");
     const author = await q.ask("Author [NOT SET]");
     const defaultLicense = author || "NOT SET";
     const copy = await q.ask("Copyright (LICENSE), ie: My Name [" + defaultLicense + "]");
     q.close();
+
+    const useJsx = jsxAnswer === "y" || jsxAnswer === "yes";
 
     const useCopy = copy || author;
     const useProjectName = project || projectNameFromPath;
@@ -138,6 +109,7 @@ const copyList: CopyList = {
         version: thisPkg.version,
         language: "typescript",
         fixDefaultForCommonJS: true,
+        jsx: false,
     };
     await fs.writeFile(pkgPath, JSON.stringify(targetPkg, null, INDENT));
 
@@ -149,6 +121,12 @@ const copyList: CopyList = {
     await fs.writeFile(licPath, lic);
 
     await fs.ensureDir(path.join(targetDir, "src"));
+
+    // @TODO add yarn install for non-jsx (jsx will apply it)
+
+    if (useJsx) {
+        await migrateJsx(targetDir);
+    }
 
     console.info("");
     console.info("Done");

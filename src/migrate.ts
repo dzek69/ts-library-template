@@ -1,19 +1,19 @@
+import path from "path";
 import * as brokenSemver from "semver";
+import { get, last } from "bottom-line-utils";
+import fs from "fs-extra";
+
 import type { VersionMigration } from "./migrations.config.js";
-import { migrationsConfig } from "./migrations.config.js";
 import type { PackageJson } from "./Migration.js";
+
+import { jsxMigration, migrationsConfig } from "./migrations.config.js";
 import { Migration } from "./Migration.js";
 import Question from "./Question.js";
 
 interface ApplyOptions {
     migration: Migration;
     migrations: VersionMigration[];
-}
-
-interface MigrateOptions {
-    targetDir: string;
-    pkg: PackageJson;
-    ver: string;
+    updateVersion: boolean;
 }
 
 const semver = {
@@ -22,7 +22,8 @@ const semver = {
     gte: (brokenSemver.gte || brokenSemver.default.gte),
 };
 
-const applyMigrations = async ({ migration, migrations }: ApplyOptions) => {
+// eslint-disable-next-line max-statements
+const applyMigrations = async ({ migration, migrations, updateVersion }: ApplyOptions) => {
     let skipped = 0;
 
     const err = (e: Error) => {
@@ -36,6 +37,9 @@ const applyMigrations = async ({ migration, migrations }: ApplyOptions) => {
         console.info(`Upgrading [${migrationConfig.version} -> ${migrationConfig.nextVersion}]`);
         for (let j = 0; j < migrationConfig.steps.length; j++) {
             const step = migrationConfig.steps[j];
+            if ("jsx" in step && step.jsx !== migration.jsx) {
+                continue;
+            }
             console.info();
             console.info(`- ${step.name}`);
             await step.fn(migration).then(
@@ -43,7 +47,11 @@ const applyMigrations = async ({ migration, migrations }: ApplyOptions) => {
                 err,
             );
         }
-        await migration.setPath("libraryTemplate.version", migrationConfig.nextVersion);
+    }
+    const migCfg = last(migrations);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (migCfg && updateVersion) {
+        await migration.setPath("libraryTemplate.version", migCfg.nextVersion);
     }
 
     return skipped;
@@ -71,7 +79,40 @@ const aggressiveMessage = async (migrations: VersionMigration[]) => {
     return accept.startsWith("y");
 };
 
-const migrate = async ({ targetDir, pkg, ver }: MigrateOptions) => { // eslint-disable-line max-statements
+const prepareMigrate = async (targetDir: string) => {
+    let pkg, lang, ver,
+        rethrow = false;
+
+    const pkgPath = path.join(targetDir, "package.json");
+
+    try {
+        pkg = JSON.parse(String(await fs.readFile(pkgPath))) as PackageJson;
+        ver = get(pkg, ["libraryTemplate", "version"]) as string | undefined;
+        if (!ver) {
+            throw new Error("No version");
+        }
+
+        lang = get(pkg, ["libraryTemplate", "language"]) as string | undefined;
+        if (lang !== "typescript") {
+            rethrow = true;
+            throw new Error("Migration from js-library-template is currently not supported");
+        }
+    }
+    catch (e: unknown) {
+        if (rethrow) {
+            throw e;
+        }
+        throw new Error("Target directory is not empty, no supported library found to upgrade.");
+    }
+
+    return {
+        pkg, ver,
+    };
+};
+
+const migrate = async (targetDir: string) => { // eslint-disable-line max-statements
+    const { pkg, ver } = await prepareMigrate(targetDir);
+
     const migration = new Migration({ targetDir, pkg });
     const migrations = migrationsConfig.filter(migrationConfig => {
         return semver.gte(migrationConfig.version, ver);
@@ -85,12 +126,13 @@ const migrate = async ({ targetDir, pkg, ver }: MigrateOptions) => { // eslint-d
     }
 
     if (!migrations.length) {
-        console.info("The project is up to date with current js-library-template.");
+        console.info("The project is up to date with current ts-library-template.");
         return;
     }
     console.info(`${migrations.length} updates to apply, versions: ${versions.join(", ")}`);
 
-    const skipped = await applyMigrations({ migration, migrations });
+    const updateVersion = true;
+    const skipped = await applyMigrations({ migration, migrations, updateVersion });
 
     console.info();
     if (skipped) {
@@ -99,4 +141,24 @@ const migrate = async ({ targetDir, pkg, ver }: MigrateOptions) => { // eslint-d
     console.info("Upgrading finished.");
 };
 
-export { migrate };
+const migrateJsx = async (targetDir: string) => {
+    const { pkg } = await prepareMigrate(targetDir);
+    if (pkg.libraryTemplate!.jsx) {
+        // do not need migration from non-jsx to jsx
+        return;
+    }
+
+    const migration = new Migration({ targetDir, pkg });
+    const migrations = [jsxMigration];
+
+    const updateVersion = false;
+    const skipped = await applyMigrations({ migration, migrations, updateVersion });
+    console.info();
+    if (skipped) {
+        console.info(`Skipped ${skipped} upgrades. Please perform them manually if needed.`);
+    }
+
+    console.info("Upgrading finished.");
+};
+
+export { migrate, migrateJsx };

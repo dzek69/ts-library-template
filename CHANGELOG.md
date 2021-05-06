@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.1.0] - 2021-05-06
+### Added
+- self: React libraries creating support
+- self: upgrading library to React type
+### Changed
+- lib: added `root: true` to eslint config file to prevent possible issues
+### Removed
+- lib: `start:dev:compatibility` as it is not needed, use `@types/` dir in your src instead
+### Fixed
+- self: library not working for creating new lib due to a missing file
+
 ## [3.0.3] - 2021-04-30
 ### Changed
 - self: aggressive changes list should start with bullet point

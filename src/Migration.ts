@@ -1,9 +1,10 @@
 import fs from "fs-extra";
-import type { SpawnOptionsWithoutStdio } from "child_process";
 import child from "child_process";
 import path, { join } from "path";
 import { get, set } from "bottom-line-utils";
+import type { SpawnOptionsWithoutStdio } from "child_process";
 
+import type { PackageJson } from "./types.js";
 import { dirname } from "./dirname/dirname.js";
 
 const thisDir = path.dirname(path.dirname(dirname));
@@ -38,12 +39,6 @@ const JSON_INDENT = 4;
 
 type Data = Record<string, unknown>;
 
-interface PackageJson extends Data {
-    dependencies?: Data;
-    devDependencies?: Data;
-    version: string;
-}
-
 interface Options {
     targetDir: string;
     pkg: PackageJson;
@@ -54,7 +49,7 @@ type GetSetPath = string | string[];
 type ContentsUpdater = (fileContents: string) => (Promise<string> | string);
 type JSONContentsUpdater = (
     fileData: Data, setFn: (objPath: GetSetPath, value: unknown) => void
-) => (Promise<void> | void);
+) => (Promise<Data | undefined> | Data | undefined);
 
 class Migration {
     private readonly _targetDir: string;
@@ -73,6 +68,14 @@ class Migration {
         );
     }
 
+    public get jsx() {
+        return Boolean(this._pkg.libraryTemplate!.jsx);
+    }
+
+    public get targetDir() {
+        return this._targetDir;
+    }
+
     public async setPath(objPath: GetSetPath, value: unknown) {
         set(this._pkg, objPath, value);
         await this._savePkg();
@@ -80,6 +83,13 @@ class Migration {
 
     public async setScript(scriptName: string, value: string) {
         await this.setPath(["scripts", scriptName], value);
+    }
+
+    public async deleteScript(scriptName: string) {
+        // @TODO add and use deletePath
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete this._pkg.scripts[scriptName];
+        await this._savePkg();
     }
 
     public async upgradeScript(scriptName: string, oldValue: string, newValue: string) {
@@ -143,8 +153,8 @@ class Migration {
     public async updateContentsJSON(file: string, updater: JSONContentsUpdater) {
         const target = join(this._targetDir, file);
         const data = JSON.parse(String(await fs.readFile(target))) as Data;
-        await updater(data, set.bind(null, data));
-        await fs.writeFile(target, JSON.stringify(data, null, JSON_INDENT));
+        const newData = await updater(data, set.bind(null, data));
+        await fs.writeFile(target, JSON.stringify(newData ?? data, null, JSON_INDENT));
     }
 
     public assertPath(objPath: GetSetPath, value: unknown, error: Error) {

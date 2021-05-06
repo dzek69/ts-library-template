@@ -1,8 +1,10 @@
+/* eslint-disable max-lines */
 import type { Migration } from "./Migration";
 
 interface MigrationStep {
     name: string;
     fn: (mig: Migration) => Promise<void>;
+    jsx?: boolean;
 }
 
 interface VersionMigration {
@@ -121,8 +123,107 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.0.3",
+        nextVersion: "3.1.0",
+        steps: [
+            {
+                name: "add jsx information to libraryTemplate config",
+                fn: async (mig) => {
+                    await mig.setPath("libraryTemplate.jsx", false);
+                },
+            },
+            {
+                name: "add root: true to .eslintrc.json",
+                fn: async (mig) => {
+                    await mig.updateContentsJSON(".eslintrc.json", (data) => {
+                        return {
+                            root: true,
+                            ...data,
+                        };
+                    });
+                },
+            },
+            {
+                name: "remove `start:dev:compatibility` script",
+                fn: async (mig) => {
+                    mig.assertScript(
+                        "start:dev:compatibility", "TS_NODE_FILES=true yarn start:dev",
+                        new Error("Can't delete start:dev:compatibility script because it was modified"),
+                    );
+                    await mig.deleteScript("start:dev:compatibility");
+                },
+            },
+        ],
+    },
 ];
 
-export { migrationsConfig };
+const jsxMigration: VersionMigration = {
+    version: "non-React",
+    nextVersion: "React",
+    steps: [
+        {
+            name: "add react",
+            fn: async (mig) => {
+                await mig.addDependency("react", "^17.0.2");
+                await mig.addDependency("react-dom", "^17.0.2");
+            },
+        },
+        {
+            name: "add parcel",
+            fn: async (mig) => {
+                await mig.addDevDependency("parcel-bundler", "^1.12.5");
+            },
+        },
+        {
+            name: "add postcss",
+            fn: async (mig) => {
+                await mig.addDevDependency("postcss", "^8.2.13");
+                await mig.addDevDependency("postcss-modules", "^3.2.2");
+                await mig.addDevDependency("postcss-nested", "^3.0.0");
+                await mig.copy("template/jsx/.postcssrc", ".postcssrc");
+            },
+        },
+        {
+            name: "add types",
+            fn: async (mig) => {
+                await mig.addDevDependency("@types/react", "^17.0.4");
+                await mig.addDevDependency("@types/react-dom", "^17.0.3");
+                await mig.copy("template/jsx/src/@types/[file].pcss.d.ts", "src/@types/[file].pcss.d.ts");
+            },
+        },
+        {
+            name: "add demo files",
+            fn: async (mig) => {
+                await mig.copy("template/jsx/src/index.pcss", "src/index.pcss");
+                await mig.copy("template/jsx/src/index.tsx", "src/index.tsx");
+                await mig.copy("template/jsx/src/__test", "src/__test");
+            },
+        },
+        {
+            name: "set jsx information in libraryTemplate config",
+            fn: async (mig) => {
+                await mig.setPath("libraryTemplate.jsx", true);
+            },
+        },
+        {
+            name: "set new package.json scripts",
+            fn: async (mig) => {
+                mig.assertScript(
+                    "start:dev", "nodemon", new Error("Can't update start:dev script because it was modified"),
+                );
+                await mig.setScript("start:dev", "parcel serve src/__test/index.html");
+            },
+        },
+        {
+            name: "yarn install",
+            fn: async (mig) => {
+                await mig.yarn();
+            },
+        },
+    ],
+};
+
+export { migrationsConfig, jsxMigration };
 
 export type { VersionMigration };
