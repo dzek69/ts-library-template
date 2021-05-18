@@ -21,7 +21,7 @@ const extractProjectName = (givenPath: string) => {
 
 const INDENT = 2;
 
-type CopyList = Record<string, string>;
+interface CopyList { [key: string]: string }
 
 const copyList: CopyList = {
     // target: source

@@ -37,7 +37,7 @@ const run = async (command: string, args: (string)[], options: SpawnOptionsWitho
 const PKG_JSON_INDENT = 2;
 const JSON_INDENT = 4;
 
-type Data = Record<string, unknown>;
+interface Data { [key: string]: unknown }
 
 interface Options {
     targetDir: string;
@@ -163,8 +163,18 @@ class Migration {
         }
     }
 
+    public assertNoPath(objPath: GetSetPath, error: Error) {
+        if (get(this._pkg, objPath) !== undefined) {
+            throw error;
+        }
+    }
+
     public assertScript(scriptName: string, value: string, error: Error) {
         this.assertPath(["scripts", scriptName], value, error);
+    }
+
+    public assertNoScript(scriptName: string, error: Error) {
+        this.assertNoPath(["scripts", scriptName], error);
     }
 
     public assertNoDependency(name: string, error: Error) {
@@ -182,6 +192,18 @@ class Migration {
     public assertNoAnyDependency(name: string, error: Error) {
         this.assertNoDependency(name, error);
         this.assertNoDevDependency(name, error);
+    }
+
+    public assertDevDependency(name: string, version: string | null, error: Error) {
+        if (
+            !this._pkg.devDependencies
+            || (
+                (version && this._pkg.devDependencies[name] !== version)
+                || (!version && !this._pkg.devDependencies[name])
+            )
+        ) {
+            throw error;
+        }
     }
 
     public yarn() {

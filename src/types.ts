@@ -1,4 +1,4 @@
-type Data = Record<string, unknown>;
+interface Data { [key: string]: unknown }
 
 interface PackageJson extends Record<string, unknown> {
     name: string;

@@ -156,6 +156,32 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.1.0",
+        nextVersion: "3.1.1",
+        steps: [
+            {
+                name: "bump @dzek69/eslint-config-typescript",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "@dzek69/eslint-config-typescript", null,
+                        new Error("No @dzek69/eslint-config-typescript found, so upgrade is skipped"),
+                    );
+                    await mig.upgradeDependency("@dzek69/eslint-config-typescript", "^0.3.2");
+                },
+            },
+            {
+                name: "restore `start:dev:compatibility` script",
+                fn: async (mig) => {
+                    mig.assertNoScript(
+                        "start:dev:compatibility",
+                        new Error("Can't set start:dev:compatibility script because it was modified"),
+                    );
+                    await mig.setScript("start:dev:compatibility", "TS_NODE_FILES=true yarn start:dev");
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: VersionMigration = {

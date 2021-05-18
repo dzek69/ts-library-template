@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.1.1] - 2021-05-18
+### Added
+- lib: `start:dev:compatibility` restored, it is actually needed, even with `@types/`
+- self: `husky` prepush hook
+### Changed
+- lib: bump @dzek69/eslint-config-typescript
+
 ## [3.1.0] - 2021-05-06
 ### Added
 - self: React libraries creating support
