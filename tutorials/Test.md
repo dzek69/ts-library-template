@@ -1,1 +1,1 @@
-Hi there
+This is example tutorial page.

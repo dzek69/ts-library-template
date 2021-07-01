@@ -1,5 +1,9 @@
 /* eslint-disable max-lines */
+import fs from "fs-extra";
+import path from "path";
+
 import type { Migration } from "./Migration";
+import type { PagesConfigJson } from "./types";
 
 interface MigrationStep {
     name: string;
@@ -178,6 +182,129 @@ const migrationsConfig: VersionMigration[] = [
                         new Error("Can't set start:dev:compatibility script because it was modified"),
                     );
                     await mig.setScript("start:dev:compatibility", "TS_NODE_FILES=true yarn start:dev");
+                },
+            },
+        ],
+    },
+    {
+        version: "3.1.1",
+        nextVersion: "3.2.0",
+        steps: [
+            {
+                name: "bump @dzek69/eslint-config-typescript",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "@dzek69/eslint-config-typescript", null,
+                        new Error("No @dzek69/eslint-config-typescript found, so upgrade is skipped"),
+                    );
+                    await mig.upgradeDependency("@dzek69/eslint-config-typescript", "^0.4.0");
+                },
+            },
+            {
+                name: "add @types/jest",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "jest", null,
+                        new Error("No jest found, installing types is pointless"),
+                    );
+                    await mig.addDevDependency("@types/jest", "^26.0.23");
+                },
+            },
+            {
+                name: "upgrade jest",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "jest", null,
+                        new Error("No jest found"),
+                    );
+                    await mig.upgradeDependency("jest", "^27.0.6", "devDependencies");
+                },
+            },
+            {
+                name: "upgrade typedoc",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "typedoc", null,
+                        new Error("No typedoc found"),
+                    );
+                    await mig.upgradeDependency("typedoc", "^0.21.2", "devDependencies");
+                },
+            },
+            {
+                name: "add typedoc-plugin-pages-fork-fork",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "typedoc", null,
+                        new Error("No typedoc found"),
+                    );
+                    await mig.upgradeDependency("typedoc-plugin-pages-fork-fork", "^0.0.2", "devDependencies");
+                },
+            },
+            {
+                name: "update `docs` script",
+                fn: async (mig) => {
+                    const wanted = "typedoc src/index.ts --out docs --listInvalidSymbolLinks --includes tutorials "
+                        + "--theme pages-plugin --includeVersion";
+
+                    mig.assertScript(
+                        "docs",
+                        "typedoc src/index.ts --out docs --listInvalidSymbolLinks --includes tutorials",
+                        new Error("`docs` script was updated, skipping update, wanted value: " + wanted),
+                    );
+                    await mig.setScript("docs", "wanted");
+                },
+            },
+            {
+                name: "add demo tutorial or configure existing tutorials",
+                fn: async (mig) => {
+                    const tuts = path.join(mig.targetDir, "tutorials");
+                    await fs.ensureDir(tuts);
+                    const files = await fs.readdir(tuts);
+                    if (!files.length) {
+                        await mig.copy("tutorials/Test.md");
+                        await mig.copy("pagesconfig.json");
+                        return;
+                    }
+
+                    const filesWithInfo = await Promise.all(files.map(async (file) => {
+                        const stats = await fs.lstat(path.join(tuts, file));
+                        return {
+                            file,
+                            stats,
+                        };
+                    }));
+
+                    const hasDirs = filesWithInfo.some(f => f.stats.isDirectory());
+                    if (hasDirs) {
+                        await mig.copy("pagesconfig.json", null, false);
+                        throw new Error("Your tutorials directory contains directories, demo pagesconfig.json is"
+                            + "prepared for you, please configure manually");
+                    }
+
+                    await mig.copy("pagesconfig.json", null);
+                    await mig.updateContentsJSON<PagesConfigJson>("pagesconfig.json", (obj) => {
+                        // eslint-disable-next-line no-param-reassign
+                        obj.groups![0].pages = files.map(name => {
+                            if (!name.toLowerCase().endsWith(".md")) {
+                                return { title: "", source: "" };
+                            }
+
+                            const justName = name.replace(/\.md$/i, "");
+
+                            return {
+                                title: justName,
+                                source: "./tutorials/" + name,
+                            };
+                        }).filter(p => Boolean(p.title));
+
+                        return obj;
+                    });
+                },
+            },
+            {
+                name: "install dependencies",
+                fn: async (mig) => {
+                    await mig.yarn();
                 },
             },
         ],

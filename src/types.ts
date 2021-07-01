@@ -16,6 +16,17 @@ interface PackageJson extends Record<string, unknown> {
     scripts: Data;
 }
 
+interface PagesConfigJson {
+    groups?: {
+        title: string;
+        pages: {
+            title: string;
+            source: string;
+        }[];
+    }[];
+}
+
 export type {
     PackageJson,
+    PagesConfigJson,
 };

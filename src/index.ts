@@ -42,6 +42,8 @@ const copyList: CopyList = {
     "tsconfig.cjs.json": "tsconfig.cjs.json",
     "tsconfig.lint.json": "tsconfig.lint.json",
     "tsconfig.json": "tsconfig.json",
+    "pagesconfig.json": "pagesconfig.json",
+    "tutorials/Test.md": "tutorials/Test.md",
 };
 
 (async () => { // eslint-disable-line max-statements

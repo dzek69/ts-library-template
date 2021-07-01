@@ -3,3 +3,5 @@ describe("index.spec", () => {
         true.must.be.true();
     });
 });
+
+export {};

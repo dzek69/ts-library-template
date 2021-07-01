@@ -47,9 +47,11 @@ interface Options {
 type GetSetPath = string | string[];
 
 type ContentsUpdater = (fileContents: string) => (Promise<string> | string);
-type JSONContentsUpdater = (
-    fileData: Data, setFn: (objPath: GetSetPath, value: unknown) => void
-) => (Promise<Data | undefined> | Data | undefined);
+type JSONContentsUpdater<D = Data> = (
+    fileData: D, setFn: (objPath: GetSetPath, value: unknown) => void
+) => (Promise<D | undefined> | D | undefined);
+
+type Dep = "dependencies" | "devDependencies";
 
 class Migration {
     private readonly _targetDir: string;
@@ -112,7 +114,7 @@ class Migration {
         await this.setPath(["devDependencies", name], version);
     }
 
-    public async upgradeDependency(name: string, version: string, defaultType = "dependencies") {
+    public async upgradeDependency(name: string, version: string, defaultType: Dep = "dependencies") {
         const type = this.findDependency(name) ?? defaultType;
         await this.setPath([type, name], version);
     }
@@ -132,10 +134,11 @@ class Migration {
         await fs.remove(join(this._targetDir, dirName));
     }
 
-    public async copy(sourceName: string, targetName: string | null = null) {
+    public async copy(sourceName: string, targetName: string | null = null, overwrite = true) {
         await fs.copy(
             join(thisDir, sourceName),
             join(this._targetDir, targetName ?? sourceName),
+            { overwrite },
         );
     }
 
@@ -150,10 +153,14 @@ class Migration {
         await fs.writeFile(target, contents);
     }
 
-    public async updateContentsJSON(file: string, updater: JSONContentsUpdater) {
+    public async updateContentsJSON<D = Data>(file: string, updater: JSONContentsUpdater<D>) {
         const target = join(this._targetDir, file);
-        const data = JSON.parse(String(await fs.readFile(target))) as Data;
-        const newData = await updater(data, set.bind(null, data));
+        const data = JSON.parse(String(await fs.readFile(target))) as D;
+        const newData = await updater(
+            data,
+            // @ts-expect-error `set` needs better typings
+            set.bind(null, data),
+        );
         await fs.writeFile(target, JSON.stringify(newData ?? data, null, JSON_INDENT));
     }
 
