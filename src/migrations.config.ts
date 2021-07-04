@@ -340,6 +340,28 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.3.0",
+        nextVersion: "3.3.1",
+        steps: [
+            {
+                name: "bump typedoc-plugin-pages-fork-fork",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "typedoc-plugin-pages-fork-fork", null,
+                        new Error("No typedoc-plugin-pages-fork-fork found, skipping update"),
+                    );
+                    await mig.upgradeDependency("typedoc-plugin-pages-fork-fork", "^0.0.3", "devDependencies");
+                },
+            },
+            {
+                name: "install dependencies",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: VersionMigration = {
