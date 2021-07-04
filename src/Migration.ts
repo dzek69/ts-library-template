@@ -78,6 +78,10 @@ class Migration {
         return this._targetDir;
     }
 
+    public get pkg() {
+        return this._pkg;
+    }
+
     public async setPath(objPath: GetSetPath, value: unknown) {
         set(this._pkg, objPath, value);
         await this._savePkg();
@@ -162,6 +166,12 @@ class Migration {
             set.bind(null, data),
         );
         await fs.writeFile(target, JSON.stringify(newData ?? data, null, JSON_INDENT));
+    }
+
+    public async updatePath(objPath: GetSetPath, updater: ContentsUpdater) {
+        const current = get(this._pkg, objPath);
+        const newValue = updater(String(current));
+        await this.setPath(objPath, newValue);
     }
 
     public assertPath(objPath: GetSetPath, value: unknown, error: Error) {

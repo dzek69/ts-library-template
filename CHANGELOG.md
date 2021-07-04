@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.3.0] - 2021-07-04
+### Fixed
+- lib & self: bug breaking `docs` script on 3.2.0 update
+### Added
+- self: migration update path based on prev value
+- lib: `yarn audit` on prepublishOnly
+
 ## [3.2.0] - 2021-07-01
 ### Added
 - lib: pages plugin for typedoc

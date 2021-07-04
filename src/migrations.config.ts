@@ -251,7 +251,7 @@ const migrationsConfig: VersionMigration[] = [
                         "typedoc src/index.ts --out docs --listInvalidSymbolLinks --includes tutorials",
                         new Error("`docs` script was updated, skipping update, wanted value: " + wanted),
                     );
-                    await mig.setScript("docs", "wanted");
+                    await mig.setScript("docs", wanted);
                 },
             },
             {
@@ -305,6 +305,37 @@ const migrationsConfig: VersionMigration[] = [
                 name: "install dependencies",
                 fn: async (mig) => {
                     await mig.yarn();
+                },
+            },
+        ],
+    },
+    {
+        version: "3.2.0",
+        nextVersion: "3.3.0",
+        steps: [
+            {
+                name: "update broken `docs` script (if broken by 3.2.0 bug)",
+                fn: async (mig) => {
+                    const wanted = "typedoc src/index.ts --out docs --listInvalidSymbolLinks --includes tutorials "
+                        + "--theme pages-plugin --includeVersion";
+
+                    if (mig.pkg.scripts.docs === "wanted") {
+                        await mig.setScript("docs", wanted);
+                    }
+                },
+            },
+            {
+                name: "add yarn audit to prepublishOnly",
+                fn: async (mig) => {
+                    if (!mig.pkg.scripts.prepublishOnly) {
+                        throw new Error("`prepublishOnly` is removed, can't update.");
+                    }
+
+                    if ((mig.pkg.scripts.prepublishOnly as string).includes("audit")) {
+                        throw new Error("It seems `prepublishOnly` contains audit script already, can't update.");
+                    }
+
+                    await mig.updatePath("scripts.prepublishOnly", v => "yarn audit && " + v);
                 },
             },
         ],
