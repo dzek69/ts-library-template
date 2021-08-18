@@ -362,6 +362,38 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.3.1",
+        nextVersion: "3.3.2",
+        steps: [
+            {
+                name: "bump eslint",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "eslint", null,
+                        new Error("No eslint found, skipping update"),
+                    );
+                    await mig.upgradeDependency("eslint", "^7.32.0", "devDependencies");
+                },
+            },
+            {
+                name: "bump eslint config",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "@dzek69/eslint-config-base", null,
+                        new Error("No @dzek69/eslint-config-base found, skipping update"),
+                    );
+                    await mig.upgradeDependency("@dzek69/eslint-config-base", "^2.1.0", "devDependencies");
+                },
+            },
+            {
+                name: "install dependencies",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: VersionMigration = {

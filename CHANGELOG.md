@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.3.2] - 2021-08-18
+### Changed
+- lib: bump `eslint` & config
+
 ## [3.3.1] - 2021-07-04
 ### Changed
 - lib: bumped `typedoc-plugin-pages-fork-fork` which fixes some bugs
