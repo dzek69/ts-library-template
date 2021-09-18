@@ -1,6 +1,6 @@
 import React from "react";
 
-import * as styles from "./index.pcss";
+import styles from "./index.module.scss";
 
 const Index: React.FC = (props) => {
     return (

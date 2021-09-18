@@ -1,3 +1,5 @@
+import type { Linter } from "eslint";
+
 interface Data { [key: string]: unknown }
 
 interface PackageJson extends Record<string, unknown> {
@@ -26,7 +28,10 @@ interface PagesConfigJson {
     }[];
 }
 
+type EslintRc = Linter.BaseConfig;
+
 export type {
     PackageJson,
     PagesConfigJson,
+    EslintRc,
 };

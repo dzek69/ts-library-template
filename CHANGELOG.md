@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.4.0] - 2021-09-18
+### Added
+- lib: eslint rules for React
+### Changed
+- lib: better support for React - using `next` for dev server instead of `parcel`
+
 ## [3.3.2] - 2021-08-18
 ### Changed
 - lib: bump `eslint` & config

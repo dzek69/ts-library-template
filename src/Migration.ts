@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import fs from "fs-extra";
 import child from "child_process";
 import path, { join } from "path";
@@ -91,11 +92,22 @@ class Migration {
         await this.setPath(["scripts", scriptName], value);
     }
 
-    public async deleteScript(scriptName: string) {
-        // @TODO add and use deletePath
+    public async deletePath(objPath: GetSetPath) {
+        const thePath = typeof objPath === "string" ? objPath.split(".") : [...objPath];
+        const last = thePath.pop();
+
+        const item = get(this._pkg, thePath);
+        if (item == null || !last) {
+            return;
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete this._pkg.scripts[scriptName];
+        delete (item as { [key: string]: unknown })[last];
         await this._savePkg();
+    }
+
+    public async deleteScript(scriptName: string) {
+        await this.deletePath(["scripts", scriptName]);
     }
 
     public async upgradeScript(scriptName: string, oldValue: string, newValue: string) {
@@ -221,6 +233,20 @@ class Migration {
         ) {
             throw error;
         }
+    }
+
+    public async removeDependency(name: string) {
+        await this.deletePath(["dependencies", name]);
+    }
+
+    public async removeDevDependency(name: string) {
+        await this.deletePath(["devDependencies", name]);
+    }
+
+    public async removeAnyDependency(name: string) {
+        const depType = this.findDependency(name);
+        if (!depType) { return; }
+        await this.deletePath([depType, name]);
     }
 
     public yarn() {

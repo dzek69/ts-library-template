@@ -1,9 +1,10 @@
 /* eslint-disable max-lines */
+import { makeArray } from "bottom-line-utils";
 import fs from "fs-extra";
 import path from "path";
 
 import type { Migration } from "./Migration";
-import type { PagesConfigJson } from "./types";
+import type { PagesConfigJson, EslintRc } from "./types";
 
 interface MigrationStep {
     name: string;
@@ -11,11 +12,19 @@ interface MigrationStep {
     jsx?: boolean;
 }
 
+interface JSXMigrationStep extends MigrationStep {
+    jsx?: never;
+}
+
 interface VersionMigration {
     version: string;
     nextVersion: string;
     aggresive?: string;
     steps: MigrationStep[];
+}
+
+interface JSXVersionMigration extends VersionMigration {
+    steps: JSXMigrationStep[];
 }
 
 const migrationsConfig: VersionMigration[] = [
@@ -394,9 +403,125 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.3.2",
+        nextVersion: "3.4.0",
+        steps: [
+            {
+                name: "make copy of tsconfig for esm building",
+                fn: async (mig) => {
+                    await mig.copy("tsconfig.json", "tsconfig.esm.json");
+                    mig.assertScript(
+                        "compile:esm", "rm -rf esm && tsc && node ./build-scripts/compile.esm.after.mjs",
+                        new Error("Can't update compile:esm script because it was modified"),
+                    );
+                    await mig.setScript(
+                        "compile:esm",
+                        "rm -rf esm && tsc --project tsconfig.esm.json && node ./build-scripts/compile.esm.after.mjs",
+                    );
+                },
+            },
+            {
+                name: "replace parcel with next",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.removeDependency("parcel-bundler");
+                    await mig.addDevDependency("next", "^11.1.0");
+                },
+            },
+            {
+                name: "replace postcss with sass",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.removeDependency("postcss");
+                    await mig.removeDependency("postcss-modules");
+                    await mig.removeDependency("postcss-nested");
+                    await mig.remove(".postcssrc");
+                    await mig.remove("src/@types/[file].pcss.d.ts");
+
+                    await mig.addDevDependency("sass", "^1.35.2");
+                },
+            },
+            {
+                name: "move demo files",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.rename("src/__test", "src/pages");
+                },
+            },
+            {
+                name: "setup babel",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.remove("babel.config.cjs");
+
+                    await mig.addDevDependency("babel-plugin-module-resolver", "^4.1.0");
+                    await mig.copy("template/jsx/babel.config.js", "babel.config.js");
+
+                    await mig.deletePath("type");
+                },
+            },
+            {
+                name: "update scripts",
+                jsx: true,
+                fn: async (mig) => {
+                    mig.assertScript(
+                        "start:dev", "parcel serve src/__test/index.html",
+                        new Error("Can't update start:dev script because it was modified"),
+                    );
+                    await mig.setScript("start:dev", "next dev");
+                },
+            },
+            {
+                name: "add eslint config for react",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.addDevDependency("eslint-plugin-react", "^7.24.0");
+                    await mig.addDevDependency("@dzek69/eslint-config-react", "^1.2.2");
+
+                    await mig.updateContentsJSON<EslintRc>(".eslintrc.json", (data, set) => {
+                        if (!data.extends) {
+                            throw new TypeError("Invalid eslint configuration file");
+                        }
+
+                        if (data.extends) {
+                            if (data.extends === "string") {
+                                // eslint-disable-next-line no-param-reassign
+                                data.extends = makeArray(data.extends);
+                            }
+                            if (Array.isArray(data.extends)) { // check just for TS, always true
+                                data.extends.push("@dzek69/eslint-config-react");
+                            }
+                        }
+
+                        set(["rules", "react/prop-types"], "off");
+                        // eslint-disable-next-line no-param-reassign
+                        data.settings = {
+                            ...data.settings,
+                            react: {
+                                createClass: "createReactClass",
+                                pragma: "React",
+                                version: "detect",
+                                flowVersion: "detect",
+                            },
+                            propWrapperFunctions: [],
+                        };
+
+                        return data;
+                    });
+                },
+            },
+            {
+                name: "yarn install",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
-const jsxMigration: VersionMigration = {
+const jsxMigration: JSXVersionMigration = {
     version: "non-React",
     nextVersion: "React",
     steps: [
@@ -408,18 +533,15 @@ const jsxMigration: VersionMigration = {
             },
         },
         {
-            name: "add parcel",
+            name: "add next",
             fn: async (mig) => {
-                await mig.addDevDependency("parcel-bundler", "^1.12.5");
+                await mig.addDevDependency("next", "^11.1.0");
             },
         },
         {
-            name: "add postcss",
+            name: "add sass",
             fn: async (mig) => {
-                await mig.addDevDependency("postcss", "^8.2.13");
-                await mig.addDevDependency("postcss-modules", "^3.2.2");
-                await mig.addDevDependency("postcss-nested", "^3.0.0");
-                await mig.copy("template/jsx/.postcssrc", ".postcssrc");
+                await mig.addDevDependency("sass", "^1.35.2");
             },
         },
         {
@@ -427,15 +549,14 @@ const jsxMigration: VersionMigration = {
             fn: async (mig) => {
                 await mig.addDevDependency("@types/react", "^17.0.4");
                 await mig.addDevDependency("@types/react-dom", "^17.0.3");
-                await mig.copy("template/jsx/src/@types/[file].pcss.d.ts", "src/@types/[file].pcss.d.ts");
             },
         },
         {
             name: "add demo files",
             fn: async (mig) => {
-                await mig.copy("template/jsx/src/index.pcss", "src/index.pcss");
+                await mig.copy("template/jsx/src/pages", "src/pages");
                 await mig.copy("template/jsx/src/index.tsx", "src/index.tsx");
-                await mig.copy("template/jsx/src/__test", "src/__test");
+                await mig.copy("template/jsx/src/index.module.scss", "src/index.module.scss");
             },
         },
         {
@@ -445,12 +566,61 @@ const jsxMigration: VersionMigration = {
             },
         },
         {
+            name: "setup babel",
+            fn: async (mig) => {
+                await mig.remove("babel.config.cjs");
+
+                await mig.addDevDependency("babel-plugin-module-resolver", "^4.1.0");
+                await mig.copy("template/jsx/babel.config.js", "babel.config.js");
+
+                await mig.deletePath("type");
+            },
+        },
+        {
             name: "set new package.json scripts",
             fn: async (mig) => {
                 mig.assertScript(
                     "start:dev", "nodemon", new Error("Can't update start:dev script because it was modified"),
                 );
-                await mig.setScript("start:dev", "parcel serve src/__test/index.html");
+                await mig.setScript("start:dev", "next dev");
+            },
+        },
+        {
+            name: "add eslint config for react",
+            fn: async (mig) => {
+                await mig.addDevDependency("eslint-plugin-react", "^7.24.0");
+                await mig.addDevDependency("@dzek69/eslint-config-react", "^1.2.2");
+
+                await mig.updateContentsJSON<EslintRc>(".eslintrc.json", (data, set) => {
+                    if (!data.extends) {
+                        throw new TypeError("Invalid eslint configuration file");
+                    }
+
+                    if (data.extends) {
+                        if (data.extends === "string") {
+                            // eslint-disable-next-line no-param-reassign
+                            data.extends = makeArray(data.extends);
+                        }
+                        if (Array.isArray(data.extends)) { // check just for TS, always true
+                            data.extends.push("@dzek69/eslint-config-react");
+                        }
+                    }
+
+                    set(["rules", "react/prop-types"], "off");
+                    // eslint-disable-next-line no-param-reassign
+                    data.settings = {
+                        ...data.settings,
+                        react: {
+                            createClass: "createReactClass",
+                            pragma: "React",
+                            version: "detect",
+                            flowVersion: "detect",
+                        },
+                        propWrapperFunctions: [],
+                    };
+
+                    return data;
+                });
             },
         },
         {
