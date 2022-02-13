@@ -519,6 +519,58 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.4.0",
+        nextVersion: "3.4.1",
+        steps: [
+            {
+                name: "bump husky",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "husky", null,
+                        new Error("No husky found, skipping update"),
+                    );
+                    await mig.upgradeDependency("husky", "^7.0.4", "devDependencies");
+                },
+            },
+            {
+                name: "bump nodemon",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "nodemon", null,
+                        new Error("No nodemon found, skipping update"),
+                    );
+                    await mig.upgradeDependency("nodemon", "^2.0.15", "devDependencies");
+                },
+            },
+            {
+                name: "bump jest",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "jest", null,
+                        new Error("No jest found, skipping update"),
+                    );
+                    await mig.upgradeDependency("jest", "^27.5.1", "devDependencies");
+                },
+            },
+            {
+                name: "bump typedoc",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "typedoc", null,
+                        new Error("No typedoc found, skipping update"),
+                    );
+                    await mig.upgradeDependency("typedoc", "^0.21.10", "devDependencies");
+                },
+            },
+            {
+                name: "yarn install",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {

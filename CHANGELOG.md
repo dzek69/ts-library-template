@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.4.1] - 2022-02-13
+### Fixed
+- lib: audit issues - bump husky, jest, nodemon, typedoc
+- self: audit issues - bump husky, jest, nodemon, typedoc
+
 ## [3.4.0] - 2021-09-18
 ### Added
 - lib: eslint rules for React

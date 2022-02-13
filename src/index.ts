@@ -140,4 +140,15 @@ const copyList: CopyList = {
     process.exit(1); // eslint-disable-line no-process-exit
 });
 
-export {};
+type One = 1;
+type StringifiedOne = `${One}`;
+
+/**
+ * Test function, just to test typedoc
+ * @param {StringifiedOne} a - a value
+ */
+const testFn = (a: StringifiedOne) => { return a + "."; };
+
+export {
+    testFn,
+};
