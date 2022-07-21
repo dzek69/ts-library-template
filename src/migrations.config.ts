@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import path from "path";
 
 import type { Migration } from "./Migration";
-import type { PagesConfigJson, EslintRc } from "./types";
+import type { PagesConfigJson, EslintRc, TSConfigJson } from "./types";
 
 interface MigrationStep {
     name: string;
@@ -571,6 +571,65 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.4.1",
+        nextVersion: "3.5.0",
+        steps: [
+            {
+                name: "add next-env to tsconfig",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.updateContentsJSON<TSConfigJson>("tsconfig.json", tsconfig => {
+                        return {
+                            ...tsconfig,
+                            include: [...(tsconfig.include ?? []), "next-env.d.ts"],
+                        };
+                    });
+                    await mig.updateContentsJSON<TSConfigJson>("tsconfig.cjs.json", tsconfig => {
+                        return {
+                            ...tsconfig,
+                            include: [...(tsconfig.include ?? []), "next-env.d.ts"],
+                        };
+                    });
+                },
+            },
+            {
+                name: "add pagesconfig to npm ignore",
+                fn: async (mig) => {
+                    await mig.pushLine(".npmignore", "/pagesconfig.json");
+                },
+            },
+            {
+                name: "add pages & demo folders in dist/esm to npm ignore",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.pushLine(".npmignore", "/esm/pages");
+                    await mig.pushLine(".npmignore", "/esm/demo");
+                },
+            },
+            {
+                name: "add .next folder to ignore files",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.pushLine(".npmignore", "/.next");
+                    await mig.pushLine(".gitignore", "/.next");
+                },
+            },
+            {
+                name: "fix babel config name incorrect in npm ignore",
+                fn: async (mig) => {
+                    await mig.replaceLine(".npmignore", "/babel.config.cjs", "/babel.config.js");
+                },
+            },
+            {
+                name: "add next-env to npm ignore",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.pushLine(".npmignore", "/next-env.d.ts");
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {
@@ -588,6 +647,43 @@ const jsxMigration: JSXVersionMigration = {
             name: "add next",
             fn: async (mig) => {
                 await mig.addDevDependency("next", "^11.1.0");
+            },
+        },
+        {
+            name: "add .next folder to ignore files",
+            fn: async (mig) => {
+                await mig.pushLine(".npmignore", "/.next");
+                await mig.pushLine(".gitignore", "/.next");
+            },
+        },
+        {
+            name: "add next-env to tsconfig",
+            fn: async (mig) => {
+                await mig.updateContentsJSON<TSConfigJson>("tsconfig.json", tsconfig => {
+                    return {
+                        ...tsconfig,
+                        include: [...(tsconfig.include ?? []), "next-env.d.ts"],
+                    };
+                });
+                await mig.updateContentsJSON<TSConfigJson>("tsconfig.cjs.json", tsconfig => {
+                    return {
+                        ...tsconfig,
+                        include: [...(tsconfig.include ?? []), "next-env.d.ts"],
+                    };
+                });
+            },
+        },
+        {
+            name: "add next-env to npm ignore",
+            fn: async (mig) => {
+                await mig.pushLine(".npmignore", "/next-env.d.ts");
+            },
+        },
+        {
+            name: "add pages & demo folders in dist/esm to npm ignore",
+            fn: async (mig) => {
+                await mig.pushLine(".npmignore", "/esm/pages");
+                await mig.pushLine(".npmignore", "/esm/demo");
             },
         },
         {

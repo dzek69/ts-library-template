@@ -28,10 +28,15 @@ interface PagesConfigJson {
     }[];
 }
 
+interface TSConfigJson {
+    include?: string[];
+}
+
 type EslintRc = Linter.BaseConfig;
 
 export type {
     PackageJson,
     PagesConfigJson,
+    TSConfigJson,
     EslintRc,
 };

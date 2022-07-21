@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.4.1+] - 2022-07-21
+### Fixed
+- lib: incorrect babel config file name in `.npmignore`
+- lib: added `next-env` to `tsconfig` & `.npmignore`
+### Changed
+- lib: added `next-env` to `.npmignore`
+- lib: added `pagesconfig.json` to `.npmignore`
+- lib: added `.next` folder to npm & git ignore
+- lib: added `demo` & `pages` folders to npm ignore for `esm` and `dist` folders
+
 ## [3.4.1] - 2022-02-13
 ### Fixed
 - lib: audit issues - bump husky, jest, nodemon, typedoc

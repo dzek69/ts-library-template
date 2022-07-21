@@ -169,6 +169,40 @@ class Migration {
         await fs.writeFile(target, contents);
     }
 
+    public async pushLine(file: string, line: string) {
+        const target = join(this._targetDir, file);
+        const data = String(await fs.readFile(target));
+        const lines = data.split("\n");
+        const hasLine = lines.map(s => s.trim()).find(s => s === line);
+        if (hasLine) {
+            return;
+        }
+        lines.push(line);
+        await fs.writeFile(target, lines.join("\n"));
+    }
+
+    public async replaceLine(file: string, line: string, withLine: string) {
+        const target = join(this._targetDir, file);
+        const data = String(await fs.readFile(target));
+        const lines = data.split("\n");
+        let replaced = false;
+
+        const newLines = lines.map(s => {
+            const trimmed = s.trim();
+            if (trimmed === line) {
+                replaced = true;
+                return withLine;
+            }
+            return s;
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (!replaced) {
+            return;
+        }
+        await fs.writeFile(target, newLines.join("\n"));
+    }
+
     public async updateContentsJSON<D = Data>(file: string, updater: JSONContentsUpdater<D>) {
         const target = join(this._targetDir, file);
         const data = JSON.parse(String(await fs.readFile(target))) as D;
