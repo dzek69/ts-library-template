@@ -1,7 +1,8 @@
 /* eslint-disable max-lines */
+import path from "path";
+
 import { makeArray } from "bottom-line-utils";
 import fs from "fs-extra";
-import path from "path";
 
 import type { Migration } from "./Migration";
 import type { PagesConfigJson, EslintRc, TSConfigJson } from "./types";
@@ -626,6 +627,54 @@ const migrationsConfig: VersionMigration[] = [
                 jsx: true,
                 fn: async (mig) => {
                     await mig.pushLine(".npmignore", "/next-env.d.ts");
+                },
+            },
+            {
+                name: "update nodemon",
+                fn: async (mig) => {
+                    await mig.upgradeDependency("nodemon", "^2.0.19");
+                    await mig.yarn();
+                },
+            },
+            {
+                name: "update eslint",
+                fn: async (mig) => {
+                    await mig.upgradeDependency("@dzek69/eslint-config-base", "^2.2.0");
+                    await mig.upgradeDependency("@dzek69/eslint-config-typescript", "^1.0.1");
+                    await mig.upgradeDependency("@typescript-eslint/eslint-plugin", "^5.30.3");
+                    await mig.upgradeDependency("@typescript-eslint/parser", "^5.30.3");
+                    await mig.upgradeDependency("eslint", "^8.18.0");
+                    await mig.yarn();
+                },
+            },
+            {
+                name: "add eslint import plugin",
+                fn: async (mig) => {
+                    await mig.addDevDependency("eslint-plugin-import", "^2.26.0");
+                    await mig.addDevDependency("@dzek69/eslint-config-import", "^1.0.0");
+                    await mig.addDevDependency("@dzek69/eslint-config-import-typescript", "^1.0.0");
+                    await mig.yarn();
+
+                    await mig.updateContentsJSON<EslintRc>(".eslintrc.json", (data, set) => {
+                        if (!data.extends) {
+                            throw new TypeError("Invalid eslint configuration file");
+                        }
+
+                        if (data.extends) {
+                            if (data.extends === "string") {
+                                // eslint-disable-next-line no-param-reassign
+                                data.extends = makeArray(data.extends);
+                            }
+                            if (Array.isArray(data.extends)) { // check just for TS, always true
+                                data.extends.push(
+                                    "@dzek69/eslint-config-import",
+                                    "@dzek69/eslint-config-import-typescript",
+                                );
+                            }
+                        }
+
+                        return data;
+                    });
                 },
             },
         ],

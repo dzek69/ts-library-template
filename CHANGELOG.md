@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - lib: added `pagesconfig.json` to `.npmignore`
 - lib: added `.next` folder to npm & git ignore
 - lib: added `demo` & `pages` folders to npm ignore for `esm` and `dist` folders
+- lib: upgrade `eslint`
+- lib: upgrade `nodemon`
+### Added
+- lib: add eslint import plugin and rules
 
 ## [3.4.1] - 2022-02-13
 ### Fixed
