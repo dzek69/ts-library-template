@@ -1,11 +1,13 @@
 /* eslint-disable max-lines */
-import fs from "fs-extra";
 import child from "child_process";
 import path, { join } from "path";
-import { get, set } from "bottom-line-utils";
-import type { SpawnOptionsWithoutStdio } from "child_process";
 
+import fs from "fs-extra";
+import { get, set } from "bottom-line-utils";
+
+import type { SpawnOptionsWithoutStdio } from "child_process";
 import type { PackageJson } from "./types.js";
+
 import { dirname } from "./dirname/dirname.js";
 
 const thisDir = path.dirname(path.dirname(dirname));
@@ -48,9 +50,9 @@ interface Options {
 type GetSetPath = string | string[];
 
 type ContentsUpdater = (fileContents: string) => (Promise<string> | string);
-type JSONContentsUpdater<D = Data> = (
-    fileData: D, setFn: (objPath: GetSetPath, value: unknown) => void
-) => (Promise<D | undefined> | D | undefined);
+type JSONContentsUpdater<Src = Data, Target = Src> = (
+    fileData: Src, setFn: (objPath: GetSetPath, value: unknown) => void
+) => (Promise<Target | undefined> | Target | undefined);
 
 type Dep = "dependencies" | "devDependencies";
 
@@ -203,9 +205,9 @@ class Migration {
         await fs.writeFile(target, newLines.join("\n"));
     }
 
-    public async updateContentsJSON<D = Data>(file: string, updater: JSONContentsUpdater<D>) {
+    public async updateContentsJSON<Src = Data, Target = Src>(file: string, updater: JSONContentsUpdater<Src, Target>) {
         const target = join(this._targetDir, file);
-        const data = JSON.parse(String(await fs.readFile(target))) as D;
+        const data = JSON.parse(String(await fs.readFile(target))) as Src;
         const newData = await updater(
             data,
             // @ts-expect-error `set` needs better typings

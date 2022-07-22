@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - lib: added `demo` & `pages` folders to npm ignore for `esm` and `dist` folders
 - lib: upgrade `eslint`
 - lib: upgrade `nodemon`
+- lib: upgrade `typedoc`
 ### Added
 - lib: add eslint import plugin and rules
 

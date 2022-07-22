@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 
-import fs from "fs-extra";
 import path from "path";
-import isEmptyDir from "empty-dir";
-import { dirname } from "./dirname/dirname.js";
 
+import fs from "fs-extra";
+import isEmptyDir from "empty-dir";
+
+import type { PackageJson } from "./types";
+
+import { dirname } from "./dirname/dirname.js";
 import Question from "./Question.js";
 import { migrate, migrateJsx } from "./migrate.js";
-import type { PackageJson } from "./types";
 
 const extractProjectName = (givenPath: string) => {
     if (givenPath === ".") {
@@ -146,6 +148,7 @@ type StringifiedOne = `${One}`;
 /**
  * Test function, just to test typedoc
  * @param {StringifiedOne} a - a value
+ * @example testFn("test") // 'test.'
  */
 const testFn = (a: StringifiedOne) => { return a + "."; };
 

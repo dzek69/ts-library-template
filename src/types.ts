@@ -28,6 +28,17 @@ interface PagesConfigJson {
     }[];
 }
 
+interface NewPagesConfigPage {
+    title: string;
+    source: string;
+    children?: NewPagesConfigPage[];
+}
+
+interface NewPagesConfigJson {
+    pages: NewPagesConfigPage[];
+    source?: string;
+}
+
 interface TSConfigJson {
     include?: string[];
 }
@@ -37,6 +48,7 @@ type EslintRc = Linter.BaseConfig;
 export type {
     PackageJson,
     PagesConfigJson,
+    NewPagesConfigJson,
     TSConfigJson,
     EslintRc,
 };

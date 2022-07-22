@@ -5,7 +5,7 @@ import { makeArray } from "bottom-line-utils";
 import fs from "fs-extra";
 
 import type { Migration } from "./Migration";
-import type { PagesConfigJson, EslintRc, TSConfigJson } from "./types";
+import type { PagesConfigJson, EslintRc, TSConfigJson, NewPagesConfigJson } from "./types";
 
 interface MigrationStep {
     name: string;
@@ -633,7 +633,6 @@ const migrationsConfig: VersionMigration[] = [
                 name: "update nodemon",
                 fn: async (mig) => {
                     await mig.upgradeDependency("nodemon", "^2.0.19");
-                    await mig.yarn();
                 },
             },
             {
@@ -644,7 +643,6 @@ const migrationsConfig: VersionMigration[] = [
                     await mig.upgradeDependency("@typescript-eslint/eslint-plugin", "^5.30.3");
                     await mig.upgradeDependency("@typescript-eslint/parser", "^5.30.3");
                     await mig.upgradeDependency("eslint", "^8.18.0");
-                    await mig.yarn();
                 },
             },
             {
@@ -653,7 +651,6 @@ const migrationsConfig: VersionMigration[] = [
                     await mig.addDevDependency("eslint-plugin-import", "^2.26.0");
                     await mig.addDevDependency("@dzek69/eslint-config-import", "^1.0.0");
                     await mig.addDevDependency("@dzek69/eslint-config-import-typescript", "^1.0.0");
-                    await mig.yarn();
 
                     await mig.updateContentsJSON<EslintRc>(".eslintrc.json", (data, set) => {
                         if (!data.extends) {
@@ -675,6 +672,36 @@ const migrationsConfig: VersionMigration[] = [
 
                         return data;
                     });
+                },
+            },
+            {
+                name: "upgrade typedoc",
+                fn: async (mig) => {
+                    await mig.upgradeDependency("typedoc", "^0.23.8");
+                    await mig.removeAnyDependency("typedoc-plugin-pages-fork-fork");
+                    await mig.addDevDependency("@knodes/typedoc-plugin-pages", "^0.23.1");
+                    await mig.updateContentsJSON<PagesConfigJson, NewPagesConfigJson>("pagesconfig.json", (pgs) => {
+                        return {
+                            pages: pgs.groups?.map(group => group.pages).flat(1) ?? [],
+                            source: "tutorials",
+                        };
+                    });
+
+                    mig.assertScript(
+                        "docs",
+                        "typedoc src/index.ts --out docs --listInvalidSymbolLinks --includes tutorials"
+                            + " --theme pages-plugin --includeVersion",
+                        new Error("Can't update docs script because it was modified"),
+                    );
+                    await mig.setScript(
+                        "docs", "typedoc src/index.ts --out docs --includeVersion --pluginPages ./pagesconfig.json",
+                    );
+                },
+            },
+            {
+                name: "yarn install",
+                fn: async (mig) => {
+                    await mig.yarn();
                 },
             },
         ],
