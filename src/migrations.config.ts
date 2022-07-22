@@ -699,6 +699,30 @@ const migrationsConfig: VersionMigration[] = [
                 },
             },
             {
+                name: "upgrade typescript",
+                fn: async (mig) => {
+                    await mig.upgradeDependency("typescript", "^4.7.4");
+                    const tsConfigFiles = ["tsconfig.json", "tsconfig.cjs.json", "tsconfig.lint.json"];
+                    await Promise.all(tsConfigFiles.map(file => {
+                        return mig.updateContentsJSON<TSConfigJson>(file, (obj) => {
+                            return {
+                                ...obj,
+                                compilerOptions: {
+                                    ...obj.compilerOptions,
+                                    noImplicitOverride: true,
+                                    useUnknownInCatchVariables: true,
+                                    exactOptionalPropertyTypes: true,
+                                    preserveValueImports: false,
+                                    moduleSuffixes: [""],
+                                    noImplicitReturns: true,
+                                    moduleDetection: "auto",
+                                },
+                            };
+                        });
+                    }));
+                },
+            },
+            {
                 name: "yarn install",
                 fn: async (mig) => {
                     await mig.yarn();

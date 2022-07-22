@@ -1,6 +1,7 @@
 import path from "path";
+
 import * as brokenSemver from "semver";
-import { get, last } from "bottom-line-utils";
+import { ensureError, get, last } from "bottom-line-utils";
 import fs from "fs-extra";
 
 import type { VersionMigration } from "./migrations.config.js";
@@ -8,7 +9,7 @@ import type { PackageJson } from "./Migration.js";
 
 import { jsxMigration, migrationsConfig } from "./migrations.config.js";
 import { Migration } from "./Migration.js";
-import Question from "./Question.js";
+import { Question } from "./Question.js";
 
 interface ApplyOptions {
     migration: Migration;
@@ -49,7 +50,6 @@ const applyMigrations = async ({ migration, migrations, updateVersion }: ApplyOp
         }
     }
     const migCfg = last(migrations);
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (migCfg && updateVersion) {
         await migration.setPath("libraryTemplate.version", migCfg.nextVersion);
     }
@@ -100,7 +100,7 @@ const prepareMigrate = async (targetDir: string) => {
     }
     catch (e: unknown) {
         if (rethrow) {
-            throw e;
+            throw ensureError(e);
         }
         throw new Error("Target directory is not empty, no supported library found to upgrade.");
     }

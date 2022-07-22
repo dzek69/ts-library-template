@@ -6,10 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
-## [3.4.1+] - 2022-07-21
+## [3.5.0] - 2022-07-21
 ### Fixed
 - lib: incorrect babel config file name in `.npmignore`
-- lib: added `next-env` to `tsconfig` & `.npmignore`
+- lib: added `next-env` to `tsconfig`
 ### Changed
 - lib: added `next-env` to `.npmignore`
 - lib: added `pagesconfig.json` to `.npmignore`
@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - lib: upgrade `eslint`
 - lib: upgrade `nodemon`
 - lib: upgrade `typedoc`
+- lib: upgrade `typescript`
+### Dev
+- self: lint & deps upgrade
 ### Added
 - lib: add eslint import plugin and rules
 

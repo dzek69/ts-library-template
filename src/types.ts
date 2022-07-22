@@ -41,6 +41,10 @@ interface NewPagesConfigJson {
 
 interface TSConfigJson {
     include?: string[];
+    compilerOptions: {
+        [key: string]: unknown;
+        noImplicitOverride: boolean;
+    };
 }
 
 type EslintRc = Linter.BaseConfig;

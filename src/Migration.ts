@@ -146,6 +146,7 @@ class Migration {
         if (dev[name]) {
             return "devDependencies";
         }
+        return null;
     }
 
     public async remove(dirName: string) {

@@ -8,7 +8,7 @@ import isEmptyDir from "empty-dir";
 import type { PackageJson } from "./types";
 
 import { dirname } from "./dirname/dirname.js";
-import Question from "./Question.js";
+import { Question } from "./Question.js";
 import { migrate, migrateJsx } from "./migrate.js";
 
 const extractProjectName = (givenPath: string) => {

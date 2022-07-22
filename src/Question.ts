@@ -29,4 +29,4 @@ class Question {
     }
 }
 
-export default Question;
+export { Question };
