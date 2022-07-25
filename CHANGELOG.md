@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.5.1] - 2022-07-25
+### Fixed
+- self: missing `.pagesconfig` in npm package, preventing new lib from being created
+
 ## [3.5.0] - 2022-07-21
 ### Fixed
 - lib: incorrect babel config file name in `.npmignore`
