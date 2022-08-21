@@ -1,6 +1,6 @@
 {
   "name": "ts-library-template",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "repository": "git@github.com:dzek69/ts-library-template.git",
   "license": "MIT",
   "scripts": {

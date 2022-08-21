@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "NODE_ENV=test jest",
-    "docs": "typedoc src/index.ts --out docs --listInvalidSymbolLinks --includes tutorials --theme pages-plugin --includeVersion",
+    "docs": "typedoc src/index.ts --out docs --includeVersion --pluginPages ./pagesconfig.json",
     "compile": "yarn compile:esm && yarn compile:cjs",
     "compile:esm": "rm -rf esm && tsc && node ./build-scripts/compile.esm.after.mjs",
     "compile:cjs": "rm -rf dist && tsc --project tsconfig.cjs.json && node ./build-scripts/compile.cjs.after.mjs",

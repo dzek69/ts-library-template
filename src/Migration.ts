@@ -112,15 +112,25 @@ class Migration {
         await this.deletePath(["scripts", scriptName]);
     }
 
-    public async upgradeScript(scriptName: string, oldValue: string, newValue: string) {
-        this.assertScript(
-            scriptName,
-            oldValue,
-            new Error(
-                "cannot update " + scriptName + " script as it was modified\n  "
-                + "wanted new value:\n  `" + newValue + "`",
-            ),
-        );
+    public async upgradeScript(
+        scriptName: string, oldValue: string, newValue: string, skipIfOldValueDifferent = false,
+    ) {
+        try {
+            this.assertScript(
+                scriptName,
+                oldValue,
+                new Error(
+                    "cannot update " + scriptName + " script as it was modified\n  "
+                    + "wanted new value:\n  `" + newValue + "`",
+                ),
+            );
+        }
+        catch (e: unknown) {
+            if (skipIfOldValueDifferent) {
+                return;
+            }
+            throw e as Error;
+        }
         await this.setScript(scriptName, newValue);
     }
 

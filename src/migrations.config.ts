@@ -730,6 +730,38 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.5.0",
+        nextVersion: "3.5.1",
+        steps: [],
+    },
+    {
+        version: "3.5.1",
+        nextVersion: "3.5.2",
+        steps: [
+            {
+                name: "fix potentially outdated docs script",
+                fn: async (mig) => {
+                    // if created from 3.5.0 or 3.5.1 the docs script will be outdated
+                    const pkg = mig.pkg;
+                    const good = "typedoc src/index.ts --out docs --includeVersion --pluginPages ./pagesconfig.json";
+                    const bugged = "typedoc src/index.ts --out docs --listInvalidSymbolLinks --includes tutorials"
+                            + " --theme pages-plugin --includeVersion";
+
+                    if (pkg.scripts.docs === good) {
+                        // all good
+                        return;
+                    }
+                    if (pkg.scripts.docs === bugged) {
+                        await mig.setScript("docs", good);
+                        return;
+                    }
+
+                    throw new Error("Cannot update docs scripts, because it was modified");
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.5.2] - 2022-08-21
+### Fixed
+- lib: newly created libraries had broken `docs` script since 3.5.0
+
 ## [3.5.1] - 2022-07-25
 ### Fixed
 - self: missing `.pagesconfig` in npm package, preventing new lib from being created
