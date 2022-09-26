@@ -762,6 +762,42 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.5.2",
+        nextVersion: "3.5.3",
+        steps: [
+            {
+                name: "update ts-node",
+                fn: async (mig) => {
+                    mig.assertDevDependency("ts-node", null, new Error("ts-node not installed, won't upgrade"));
+                    await mig.upgradeDependency("ts-node", "^10.9.1");
+                },
+            },
+            {
+                name: "update husky",
+                fn: async (mig) => {
+                    mig.assertDevDependency("husky", null, new Error("Husky not installed, won't upgrade"));
+                    await mig.upgradeDependency("husky", "^8.0.1");
+                },
+            },
+            {
+                name: "add husky install script",
+                fn: async (mig) => {
+                    mig.assertDevDependency("husky", null, new Error("Husky not installed, won't set install script"));
+                    mig.assertNoScript("prepare",
+                        new Error("Prepare script already exist, cannot update it with husky install"),
+                    );
+                    await mig.setScript("prepare", "husky install");
+                },
+            },
+            {
+                name: "yarn install",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {

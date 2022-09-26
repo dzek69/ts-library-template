@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.5.3] - 2022-08-21
+### Changed
+- lib: upgrade `ts-node`
+- lib: upgrade `husky`
+### Fixed
+- lib: husky not installed properly
+
 ## [3.5.2] - 2022-08-21
 ### Fixed
 - lib: newly created libraries had broken `docs` script since 3.5.0
