@@ -4,6 +4,7 @@ import path, { join } from "path";
 
 import fs from "fs-extra";
 import { get, set } from "bottom-line-utils";
+import semver from "semver";
 
 import type { SpawnOptionsWithoutStdio } from "child_process";
 import type { PackageJson } from "./types.js";
@@ -144,6 +145,28 @@ class Migration {
 
     public async upgradeDependency(name: string, version: string, defaultType: Dep = "dependencies") {
         const type = this.findDependency(name) ?? defaultType;
+        await this.setPath([type, name], version);
+    }
+
+    public async safelyUpgradeDependency(name: string, version: string) {
+        const type = this.findDependency(name);
+        if (!type) {
+            throw new Error(`Cannot upgrade ${name}, because it is not installed`);
+        }
+        const depVersion = this._pkg[type]?.[name] as string;
+        const minVersion = semver.minVersion(depVersion);
+        if (!minVersion) {
+            throw new TypeError(`Cannot parse current version of ${name}`);
+        }
+        const minNewVersion = semver.minVersion(version);
+        if (!minNewVersion) {
+            throw new TypeError(`Cannot parse next version of ${name}`);
+        }
+        if (!semver.gt(minNewVersion, minVersion)) {
+            throw new Error(
+                `Currently installed version of ${name} ${minVersion.version} is higher than ${minNewVersion.version}`,
+            );
+        }
         await this.setPath([type, name], version);
     }
 

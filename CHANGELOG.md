@@ -6,7 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
-## [3.5.3] - 2022-08-21
+## [3.6.0] - 2022-09-28
+### Added
+- lib: added `updates` scripts for easy checking what packages can be updated
+- self: `safelyUpgradeDependency` function for easier version bumps
+### Changed
+- lib: updated a lot of libs
+- lib: updated `docs` script
+
+## [3.5.3] - 2022-09-26
 ### Changed
 - lib: upgrade `ts-node`
 - lib: upgrade `husky`

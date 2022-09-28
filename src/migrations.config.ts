@@ -798,6 +798,121 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.5.3",
+        nextVersion: "3.6.0",
+        steps: [
+            {
+                name: "set `updates` scripts",
+                fn: async (mig) => {
+                    mig.assertNoScript("updates", new Error("`updates` script is already defined"));
+                    mig.assertNoScript("updates:dev", new Error("`updates:dev` script is already defined"));
+                    mig.assertNoScript("updates:all", new Error("`updates:all` script is already defined"));
+                    await mig.setScript("updates", "npx --yes npm-check-updates --dep prod");
+                    await mig.setScript("updates:dev", "npx --yes npm-check-updates --dep dev");
+                    await mig.setScript("updates:all", "npx --yes npm-check-updates");
+                },
+            },
+            {
+                name: "update `docs` script",
+                fn: async (mig) => {
+                    mig.assertScript(
+                        "docs", "typedoc src/index.ts --out docs --includeVersion --pluginPages ./pagesconfig.json",
+                        new Error("`docs` scripts was updated manually, can't update"),
+                    );
+                    await mig.setScript(
+                        "docs",
+                        "typedoc src/index.ts --skipErrorChecking "
+                            + "--out docs --includeVersion --pluginPages ./pagesconfig.json",
+                    );
+                },
+            },
+            {
+                name: "update @babel/core",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/core", "^7.19.3");
+                },
+            },
+            {
+                name: "update @babel/preset-env",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-env", "^7.19.3");
+                },
+            },
+            {
+                name: "update @babel/preset-typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-typescript", "^7.18.6");
+                },
+            },
+            {
+                name: "update @dzek69/eslint-config-base",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@dzek69/eslint-config-base", "^2.3.0");
+                },
+            },
+            {
+                name: "update @dzek69/eslint-config-typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@dzek69/eslint-config-typescript", "^1.0.2");
+                },
+            },
+            {
+                name: "update @types/jest",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@types/jest", "^29.0.3");
+                },
+            },
+            {
+                name: "update @typescript-eslint/eslint-plugin",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@typescript-eslint/eslint-plugin", "^5.38.1");
+                },
+            },
+            {
+                name: "update @typescript-eslint/parser",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@typescript-eslint/parser", "^5.38.1");
+                },
+            },
+            {
+                name: "update eslint",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("eslint", "^8.24.0");
+                },
+            },
+            {
+                name: "update fs-extra",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("fs-extra", "^10.1.0");
+                },
+            },
+            {
+                name: "update jest",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("jest", "^29.1.1");
+                },
+            },
+            {
+                name: "update nodemon",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("nodemon", "^2.0.20");
+                },
+            },
+            {
+                name: "update typedoc",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("typedoc", "^0.23.15");
+                },
+            },
+            {
+                name: "yarn install",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {
