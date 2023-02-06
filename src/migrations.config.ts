@@ -913,6 +913,69 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.6.0",
+        nextVersion: "3.7.0",
+        steps: [
+            {
+                name: "update potentially outdated docs script",
+                fn: async (mig) => {
+                    const docs = mig.pkg.scripts.docs;
+                    const targetScript = "typedoc src/index.ts --skipErrorChecking "
+                        + "--out docs --includeVersion --pluginPages ./pagesconfig.json";
+
+                    if (docs === targetScript) {
+                        // already updated
+                        return;
+                    }
+                    mig.assertScript(
+                        "docs", "typedoc src/index.ts --out docs --includeVersion --pluginPages ./pagesconfig.json",
+                        new Error("`docs` scripts was updated manually, can't update"),
+                    );
+                    await mig.setScript("docs", targetScript);
+                },
+            },
+            {
+                name: "update typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("typescript", "^4.9.5");
+                },
+            },
+            {
+                name: "add updates:* scripts",
+                fn: async mig => {
+                    const updates = mig.pkg.scripts.updates;
+                    if (updates) {
+                        // looks good
+                        return;
+                    }
+                    await mig.setScript("updates", "npx --yes npm-check-updates --dep prod");
+                    await mig.setScript("updates:dev", "npx --yes npm-check-updates --dep dev");
+                    await mig.setScript("updates:all", "npx --yes npm-check-updates");
+                },
+            },
+            {
+                name: "set `types` to exports",
+                fn: async mig => {
+                    await mig.setPath(["exports", ".", "types"], "./esm/index.d.ts");
+                },
+            },
+            {
+                name: "add prettier",
+                fn: async (mig) => {
+                    await mig.addDevDependency("prettier", "^2.8.3");
+                    await mig.copy("template/.prettierignore");
+                    await mig.copy("template/.prettierrc.json");
+                },
+            },
+            {
+                name: "yarn install",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {

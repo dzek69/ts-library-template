@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "NODE_ENV=test jest",
-    "docs": "typedoc src/index.ts --out docs --includeVersion --pluginPages ./pagesconfig.json",
+    "docs": "typedoc src/index.ts --skipErrorChecking --out docs --includeVersion --pluginPages ./pagesconfig.json",
     "compile": "yarn compile:esm && yarn compile:cjs",
     "compile:esm": "rm -rf esm && tsc && node ./build-scripts/compile.esm.after.mjs",
     "compile:cjs": "rm -rf dist && tsc --project tsconfig.cjs.json && node ./build-scripts/compile.cjs.after.mjs",
@@ -17,12 +17,16 @@
     "prepublishOnly": "yarn audit && yarn lint && yarn test && yarn docs",
     "prepare": "husky install",
     "start:dev": "nodemon",
-    "start:dev:compatibility": "TS_NODE_FILES=true yarn start:dev"
+    "start:dev:compatibility": "TS_NODE_FILES=true yarn start:dev",
+    "updates": "npx --yes npm-check-updates --dep prod",
+    "updates:dev": "npx --yes npm-check-updates --dep dev",
+    "updates:all": "npx --yes npm-check-updates"
   },
   "exports": {
     ".": {
       "require": "./dist/index.js",
-      "default": "./esm/index.js"
+      "default": "./esm/index.js",
+      "types": "./esm/index.d.ts"
     }
   },
   "main": "./dist/index.js",
@@ -50,9 +54,10 @@
     "jest": "^29.1.1",
     "must": "^0.13.4",
     "nodemon": "^2.0.20",
+    "prettier": "^2.8.3",
     "ts-node": "^10.9.1",
     "typedoc": "^0.23.15",
-    "typescript": "^4.2.4"
+    "typescript": "^4.9.5"
   },
   "husky": {
     "hooks": {

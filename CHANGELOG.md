@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.7.0] - 2023-02-06
+### Fixed
+- `docs` script and `updates:*` scripts were outdated/missing if project was **created** with 3.6.0 version
+### Changed
+- lib: updated `typescript`
+- `types` are added into `exports` list
+### Added
+- empty prettier install
+
 ## [3.6.0] - 2022-09-28
 ### Added
 - lib: added `updates` scripts for easy checking what packages can be updated
