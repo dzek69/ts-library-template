@@ -86,6 +86,11 @@ class Migration {
         return this._pkg;
     }
 
+    public async updatePkg(fn: (pkg: PackageJson) => unknown) {
+        await fn(this._pkg);
+        return this._savePkg();
+    }
+
     public async setPath(objPath: GetSetPath, value: unknown) {
         set(this._pkg, objPath, value);
         await this._savePkg();

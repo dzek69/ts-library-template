@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.7.1] - 2023-02-09
+### Fixed
+- lib: breaking ability to import libraries because `types` added into `exports` in `3.7.0` as last property
+
 ## [3.7.0] - 2023-02-06
 ### Fixed
 - `docs` script and `updates:*` scripts were outdated/missing if project was **created** with 3.6.0 version

@@ -976,6 +976,34 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.7.0",
+        nextVersion: "3.7.1",
+        steps: [
+            {
+                name: "fix exports field in package.json",
+                fn: async (mig) => {
+                    await mig.updatePkg(pkg => {
+                        if (!pkg.exports) {
+                            return;
+                        }
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                        if (!pkg.exports["."]) {
+                            return;
+                        }
+                        const def = pkg.exports["."].default;
+                        if (!def) {
+                            return;
+                        }
+                        // eslint-disable-next-line no-param-reassign
+                        delete pkg.exports["."].default;
+                        // eslint-disable-next-line no-param-reassign
+                        pkg.exports["."].default = def;
+                    });
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {
