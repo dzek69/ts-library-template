@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.8.0] - 2023-02-19
+### Added
+- lib: git init when project has a repo defined
+### Changed
+- lib: husky is removed if not a repo
+- lib: yarn install on initialize
+### Fixed
+- lib: prettier files copied into `template` folder when upgrading to 3.7.0
+- self: `updatePath` could fail if used with async functions
+### Dev
+- self: added some docs to migration functions
+- self: added a function to get migrator to perform manual tasks outside actual migration
+- self: `setPath` is type-safer now
+
 ## [3.7.1] - 2023-02-09
 ### Fixed
 - lib: breaking ability to import libraries because `types` added into `exports` in `3.7.0` as last property

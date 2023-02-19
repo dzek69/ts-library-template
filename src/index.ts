@@ -9,7 +9,7 @@ import type { PackageJson } from "./types";
 
 import { dirname } from "./dirname/dirname.js";
 import { Question } from "./Question.js";
-import { migrate, migrateJsx } from "./migrate.js";
+import { getMigration, migrate, migrateJsx } from "./migrate.js";
 
 const extractProjectName = (givenPath: string) => {
     if (givenPath === ".") {
@@ -126,10 +126,23 @@ const copyList: CopyList = {
 
     await fs.ensureDir(path.join(targetDir, "src"));
 
-    // @TODO add yarn install for non-jsx (jsx will apply it)
+    const mig = await getMigration(targetDir);
+
+    if (repo) {
+        await mig.run("git", ["init"]);
+        await mig.run("git", ["remote", "add", "origin", repo]);
+    }
+    else {
+        await mig.removeAnyDependency("husky");
+        await mig.updatePath("husky", () => undefined);
+    }
 
     if (useJsx) {
         await migrateJsx(targetDir);
+        // includes yarn
+    }
+    else {
+        await mig.yarn();
     }
 
     console.info("");

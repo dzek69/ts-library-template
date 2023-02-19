@@ -110,6 +110,16 @@ const prepareMigrate = async (targetDir: string) => {
     };
 };
 
+/**
+ * Returns Migration instance for given directory, allowing to perform manual migration steps.
+ * @param targetDir - target directory
+ * @returns Migration instance
+ */
+const getMigration = async (targetDir: string) => {
+    const { pkg } = await prepareMigrate(targetDir);
+    return new Migration({ targetDir, pkg });
+};
+
 const migrate = async (targetDir: string) => { // eslint-disable-line max-statements
     const { pkg, ver } = await prepareMigrate(targetDir);
 
@@ -161,4 +171,4 @@ const migrateJsx = async (targetDir: string) => {
     console.info("Upgrading finished.");
 };
 
-export { migrate, migrateJsx };
+export { migrate, migrateJsx, getMigration };

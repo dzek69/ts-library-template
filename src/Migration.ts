@@ -50,7 +50,9 @@ interface Options {
 
 type GetSetPath = string | string[];
 
-type ContentsUpdater = (fileContents: string) => (Promise<string> | string);
+type MaybePromise<T> = T | Promise<T>;
+
+type ContentsUpdater = (fileContents: string) => (MaybePromise<string | undefined>);
 type JSONContentsUpdater<Src = Data, Target = Src> = (
     fileData: Src, setFn: (objPath: GetSetPath, value: unknown) => void
 ) => (Promise<Target | undefined> | Target | undefined);
@@ -91,12 +93,12 @@ class Migration {
         return this._savePkg();
     }
 
-    public async setPath(objPath: GetSetPath, value: unknown) {
+    public async setPath(objPath: GetSetPath, value: boolean | string | undefined | number | null) {
         set(this._pkg, objPath, value);
         await this._savePkg();
     }
 
-    public async setScript(scriptName: string, value: string) {
+    public async setScript(scriptName: string, value: string | undefined) {
         await this.setPath(["scripts", scriptName], value);
     }
 
@@ -187,10 +189,53 @@ class Migration {
         return null;
     }
 
-    public async remove(dirName: string) {
-        await fs.remove(join(this._targetDir, dirName));
+    /**
+     * Removes file/dir within created library
+     */
+    public async remove(pathName: string) {
+        await fs.remove(join(this._targetDir, pathName));
     }
 
+    /**
+     * Checks if given folder is empty within created library
+     */
+    public async isDirEmpty(dirName: string) {
+        const dir = join(this._targetDir, dirName);
+        const files = await fs.readdir(dir);
+        return !files.filter(p => p !== "." && p !== "..").length;
+    }
+
+    public async assertNoFile(fileName: string) {
+        const target = join(this._targetDir, fileName);
+        if (await fs.pathExists(target)) {
+            throw new Error(`File ${fileName} exists`);
+        }
+    }
+
+    /**
+     * Asserts file existence within created library
+     */
+    public async assertFile(fileName: string) {
+        const target = join(this._targetDir, fileName);
+        if (!(await fs.pathExists(target))) {
+            throw new Error(`File ${fileName} does not exist`);
+        }
+    }
+
+    /**
+     * Moves files within created library
+     */
+    public async moveWithinLibrary(sourceName: string, targetName: string | null = null, overwrite = true) {
+        await fs.move(
+            join(this._targetDir, sourceName),
+            join(this._targetDir, targetName ?? sourceName),
+            { overwrite },
+        );
+    }
+
+    /**
+     * Copies file from ts-library-template to created library
+     */
     public async copy(sourceName: string, targetName: string | null = null, overwrite = true) {
         await fs.copy(
             join(thisDir, sourceName),
@@ -199,6 +244,9 @@ class Migration {
         );
     }
 
+    /**
+     * Renames files within created library
+     */
     public async rename(source: string, target: string) {
         await fs.rename(join(this._targetDir, source), join(this._targetDir, target));
     }
@@ -257,7 +305,7 @@ class Migration {
 
     public async updatePath(objPath: GetSetPath, updater: ContentsUpdater) {
         const current = get(this._pkg, objPath);
-        const newValue = updater(String(current));
+        const newValue = await updater(String(current));
         await this.setPath(objPath, newValue);
     }
 
@@ -324,8 +372,18 @@ class Migration {
         await this.deletePath([depType, name]);
     }
 
+    /**
+     * Runs `yarn` within created library
+     */
     public yarn() {
-        return run("yarn", [], {
+        return this.run("yarn");
+    }
+
+    /**
+     * Runs given application within created library
+     */
+    public run(applicationPath: string, args: string[] = []) {
+        return run(applicationPath, args, {
             cwd: this._targetDir,
             shell: true,
         });

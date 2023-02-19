@@ -1004,6 +1004,55 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.7.1",
+        nextVersion: "3.8.0",
+        steps: [
+            {
+                name: "init git repo",
+                fn: async (mig) => {
+                    const repo = mig.pkg.repository;
+                    if (!repo) {
+                        return;
+                    }
+                    await mig.run("git", ["init"]);
+                    await mig.run("git", ["remote", "add", "origin", repo]);
+                },
+            },
+            {
+                name: "remove husky if no repo",
+                fn: async (mig) => {
+                    if (mig.pkg.repository) {
+                        return;
+                    }
+                    await mig.removeDevDependency("husky");
+                    await mig.updatePath("husky", () => undefined);
+
+                    mig.assertScript(
+                        "prepare", "husky install", new Error("Prepare script modified, can't remove husky"),
+                    );
+                    await mig.setScript("prepare", undefined);
+                },
+            },
+            {
+                name: "fix prettier files copied into template folder while upgrading to 3.7.0",
+                fn: async (mig) => {
+                    await mig.moveWithinLibrary("template/.prettierignore", ".prettierignore", false);
+                    await mig.moveWithinLibrary("template/.prettierrc.json", ".prettierrc.json", false);
+                    const isEmpty = await mig.isDirEmpty("template");
+                    if (isEmpty) {
+                        await mig.remove("template");
+                    }
+                },
+            },
+            {
+                name: "yarn install",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {
