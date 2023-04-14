@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.9.0] - 2023-04-14
+### Changed
+- lib: dependencies bump
+### Fixed
+- self: small type issue in `updateContents` function
+
 ## [3.8.0] - 2023-02-19
 ### Added
 - lib: git init when project has a repo defined

@@ -45,6 +45,7 @@ const copyList: CopyList = {
     "tsconfig.lint.json": "tsconfig.lint.json",
     "tsconfig.json": "tsconfig.json",
     "pagesconfig.json": "pagesconfig.json",
+    "typedoc.cjs": "typedoc.cjs",
     "tutorials/Test.md": "tutorials/Test.md",
 };
 

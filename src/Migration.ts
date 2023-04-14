@@ -255,7 +255,7 @@ class Migration {
         const target = join(this._targetDir, file);
         const data = String(await fs.readFile(target));
         const contents = await updater(data);
-        await fs.writeFile(target, contents);
+        await fs.writeFile(target, contents ?? "");
     }
 
     public async pushLine(file: string, line: string) {

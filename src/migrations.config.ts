@@ -1053,6 +1053,136 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.8.0",
+        nextVersion: "3.9.0",
+        steps: [
+            {
+                name: "upgrade babel core",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/core", "^7.21.4");
+                },
+            },
+            {
+                name: "upgrade babel preset env",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-env", "^7.21.4");
+                },
+            },
+            {
+                name: "upgrade babel preset typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-typescript", "^7.21.4");
+                },
+            },
+            {
+                name: "upgrade eslint config base",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@dzek69/eslint-config-base", "^2.4.0");
+                },
+            },
+            {
+                name: "upgrade eslint config import",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@dzek69/eslint-config-import", "^1.2.0");
+                },
+            },
+            {
+                name: "upgrade eslint config typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@dzek69/eslint-config-typescript", "^1.1.0");
+                },
+            },
+            {
+                name: "upgrade @knodes/typedoc-plugin-pages",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@knodes/typedoc-plugin-pages", "^0.23.28");
+                    const docsScript = mig.pkg.scripts.docs;
+                    if (typeof docsScript !== "string") {
+                        throw new Error("docs script doesn't exist");
+                    }
+                    const needle = "--pluginPages ./pagesconfig.json";
+                    if (!docsScript.includes(needle)) {
+                        throw new Error("docs script was modified, cannot update");
+                    }
+                    await mig.setScript("docs", docsScript.replace(needle, "").trim());
+                    await mig.copy("typedoc.cjs");
+                },
+            },
+            {
+                name: "upgrade @types/jest",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@types/jest", "^29.5.0");
+                },
+            },
+            {
+                name: "upgrade @typescript-eslint/eslint-plugin",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@typescript-eslint/eslint-plugin", "^5.58.0");
+                },
+            },
+            {
+                name: "upgrade @typescript-eslint/parser",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@typescript-eslint/parser", "^5.58.0");
+                },
+            },
+            {
+                name: "upgrade eslint",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("eslint", "^8.38.0");
+                },
+            },
+            {
+                name: "upgrade eslint-plugin-import",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("eslint-plugin-import", "^2.27.5");
+                },
+            },
+            {
+                name: "upgrade fs-extra",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("fs-extra", "^11.1.1");
+                },
+            },
+            {
+                name: "upgrade husky",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("husky", "^8.0.3");
+                },
+            },
+            {
+                name: "upgrade jest",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("jest", "^29.5.0");
+                },
+            },
+            {
+                name: "upgrade nodemon",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("nodemon", "^2.0.22");
+                },
+            },
+            {
+                name: "upgrade prettier",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("prettier", "^2.8.7");
+                },
+            },
+            {
+                name: "upgrade typedoc",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("typedoc", "^0.24.1");
+                },
+            },
+            {
+                name: "upgrade typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("typescript", "^5.0.4");
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {
