@@ -1096,6 +1096,7 @@ const migrationsConfig: VersionMigration[] = [
             {
                 name: "upgrade @knodes/typedoc-plugin-pages",
                 fn: async (mig) => {
+                    // this is a bug, no such version exists:
                     await mig.safelyUpgradeDependency("@knodes/typedoc-plugin-pages", "^0.23.28");
                     const docsScript = mig.pkg.scripts.docs;
                     if (typeof docsScript !== "string") {
@@ -1179,6 +1180,27 @@ const migrationsConfig: VersionMigration[] = [
                 name: "upgrade typescript",
                 fn: async (mig) => {
                     await mig.safelyUpgradeDependency("typescript", "^5.0.4");
+                },
+            },
+        ],
+    },
+    {
+        version: "3.9.0",
+        nextVersion: "3.9.1",
+        steps: [
+            {
+                name: "fix @knodes/typedoc-plugin-pages version",
+                fn: async (mig) => {
+                    mig.assertDevDependency("@knodes/typedoc-plugin-pages", "^0.23.28", new Error(
+                        "typedoc-plugin-pages version is not 0.23.28, fix not needed",
+                    ));
+                    await mig.upgradeDependency("@knodes/typedoc-plugin-pages", "^0.23.4");
+                },
+            },
+            {
+                name: "yarn install",
+                fn: async (mig) => {
+                    await mig.yarn();
                 },
             },
         ],
