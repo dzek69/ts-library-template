@@ -3,11 +3,11 @@ import child from "child_process";
 import path, { join } from "path";
 
 import fs from "fs-extra";
-import { get, set } from "bottom-line-utils";
+import { get, set, sortProps } from "@ezez/utils";
 import semver from "semver";
 
 import type { SpawnOptionsWithoutStdio } from "child_process";
-import type { PackageJson } from "./types.js";
+import type { PackageJson, TSConfigJson } from "./types.js";
 
 import { dirname } from "./dirname/dirname.js";
 
@@ -187,6 +187,24 @@ class Migration {
             return "devDependencies";
         }
         return null;
+    }
+
+    public async sortPackageJson() {
+        await this.updatePkg((pkg) => {
+            // eslint-disable-next-line no-param-reassign
+            pkg.dependencies = sortProps(pkg.dependencies ?? {});
+            // eslint-disable-next-line no-param-reassign
+            pkg.devDependencies = sortProps(pkg.devDependencies ?? {});
+            return pkg;
+        });
+    }
+
+    public async sortTSConfigCompilerOptions(configFilePath: string) {
+        await this.updateContentsJSON<TSConfigJson>(configFilePath, (data) => {
+            // eslint-disable-next-line no-param-reassign
+            data.compilerOptions = sortProps(data.compilerOptions ?? {});
+            return data;
+        });
     }
 
     /**

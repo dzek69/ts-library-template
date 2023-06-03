@@ -42,9 +42,9 @@ interface NewPagesConfigJson {
 
 interface TSConfigJson {
     include?: string[];
-    compilerOptions: {
+    compilerOptions?: {
         [key: string]: unknown;
-        noImplicitOverride: boolean;
+        noImplicitOverride?: boolean;
     };
 }
 

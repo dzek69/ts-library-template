@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import path from "path";
 
-import { makeArray } from "bottom-line-utils";
+import { ensureArray } from "@ezez/utils";
 import fs from "fs-extra";
 
 import type { Migration } from "./Migration";
@@ -293,8 +293,15 @@ const migrationsConfig: VersionMigration[] = [
 
                     await mig.copy("pagesconfig.json", null);
                     await mig.updateContentsJSON<PagesConfigJson>("pagesconfig.json", (obj) => {
+                        if (!obj.groups) {
+                            throw new Error("pagesconfig.json doesn't have `groups` field");
+                        }
+                        if (!obj.groups[0]) {
+                            throw new Error("pagesconfig.json doesn't have any groups");
+                        }
+
                         // eslint-disable-next-line no-param-reassign
-                        obj.groups![0].pages = files.map(name => {
+                        obj.groups[0].pages = files.map(name => {
                             if (!name.toLowerCase().endsWith(".md")) {
                                 return { title: "", source: "" };
                             }
@@ -488,7 +495,7 @@ const migrationsConfig: VersionMigration[] = [
                         if (data.extends) {
                             if (data.extends === "string") {
                                 // eslint-disable-next-line no-param-reassign
-                                data.extends = makeArray(data.extends);
+                                data.extends = ensureArray(data.extends);
                             }
                             if (Array.isArray(data.extends)) { // check just for TS, always true
                                 data.extends.push("@dzek69/eslint-config-react");
@@ -660,7 +667,7 @@ const migrationsConfig: VersionMigration[] = [
                         if (data.extends) {
                             if (data.extends === "string") {
                                 // eslint-disable-next-line no-param-reassign
-                                data.extends = makeArray(data.extends);
+                                data.extends = ensureArray(data.extends);
                             }
                             if (Array.isArray(data.extends)) { // check just for TS, always true
                                 data.extends.push(
@@ -987,7 +994,6 @@ const migrationsConfig: VersionMigration[] = [
                         if (!pkg.exports) {
                             return;
                         }
-                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         if (!pkg.exports["."]) {
                             return;
                         }
@@ -1205,6 +1211,79 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.9.1",
+        nextVersion: "3.10.0",
+        steps: [
+            {
+                name: "upgrade @babel/core",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/core", "^7.22.1");
+                },
+            },
+            {
+                name: "upgrade @babel/preset-env",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-env", "^7.22.4");
+                },
+            },
+            {
+                name: "upgrade @babel/preset-typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-typescript", "^7.21.5");
+                },
+            },
+            {
+                name: "upgrade @types/jest",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@types/jest", "^29.5.2");
+                },
+            },
+            {
+                name: "upgrade prettier",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("prettier", "^2.8.8");
+                },
+            },
+            {
+                name: "upgrade typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("typescript", "^5.1.3");
+                },
+            },
+            {
+                name: "add noUncheckedIndexedAccess to tsconfig.json",
+                fn: async (mig) => {
+                    const tsFiles = ["tsconfig.json", "tsconfig.cjs.json", "tsconfig.lint.json"];
+
+                    await Promise.all(tsFiles.map(async (file) => {
+                        await mig.updateContentsJSON<TSConfigJson>(file, (tsconfig) => {
+                            if (!tsconfig.compilerOptions) {
+                                // eslint-disable-next-line no-param-reassign
+                                tsconfig.compilerOptions = {};
+                            }
+                            // eslint-disable-next-line no-param-reassign
+                            tsconfig.compilerOptions.noUncheckedIndexedAccess = true;
+                            return tsconfig;
+                        });
+                        await mig.sortTSConfigCompilerOptions(file);
+                    }));
+                },
+            },
+            {
+                name: "sort package.json deps and devDeps",
+                fn: async (mig) => {
+                    await mig.sortPackageJson();
+                },
+            },
+            {
+                name: "yarn install",
+                fn: async (mig) => {
+                    await mig.yarn();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {
@@ -1322,7 +1401,7 @@ const jsxMigration: JSXVersionMigration = {
                     if (data.extends) {
                         if (data.extends === "string") {
                             // eslint-disable-next-line no-param-reassign
-                            data.extends = makeArray(data.extends);
+                            data.extends = ensureArray(data.extends);
                         }
                         if (Array.isArray(data.extends)) { // check just for TS, always true
                             data.extends.push("@dzek69/eslint-config-react");

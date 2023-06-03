@@ -1,7 +1,7 @@
 import path from "path";
 
 import * as brokenSemver from "semver";
-import { ensureError, get, last } from "bottom-line-utils";
+import { ensureError, get, last } from "@ezez/utils";
 import fs from "fs-extra";
 
 import type { VersionMigration } from "./migrations.config.js";
@@ -33,11 +33,11 @@ const applyMigrations = async ({ migration, migrations, updateVersion }: ApplyOp
     };
 
     for (let i = 0; i < migrations.length; i++) {
-        const migrationConfig = migrations[i];
+        const migrationConfig = migrations[i]!;
 
         console.info(`Upgrading [${migrationConfig.version} -> ${migrationConfig.nextVersion}]`);
         for (let j = 0; j < migrationConfig.steps.length; j++) {
-            const step = migrationConfig.steps[j];
+            const step = migrationConfig.steps[j]!;
             if ("jsx" in step && step.jsx !== migration.jsx) {
                 continue;
             }

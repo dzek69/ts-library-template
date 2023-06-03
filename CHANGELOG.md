@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.10.0] - 2023-06-03
+### Changed
+- lib: bumped some dependencies
+- lib: added `noUncheckedIndexedAccess` to `tsconfig`
+- lib: from now on tsconfig compilerOptions and package.json deps will be sorted with each upgrade
+
 ## [3.9.1] - 2023-04-14
 ### Fixed
 - lib: `@knodes/typedoc-plugin-pages` invalid version after upgrading to 3.9.0
