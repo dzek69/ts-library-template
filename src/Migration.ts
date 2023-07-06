@@ -223,10 +223,10 @@ class Migration {
         return !files.filter(p => p !== "." && p !== "..").length;
     }
 
-    public async assertNoFile(fileName: string) {
+    public async assertNoFile(fileName: string, error?: Error) {
         const target = join(this._targetDir, fileName);
         if (await fs.pathExists(target)) {
-            throw new Error(`File ${fileName} exists`);
+            throw error ?? new Error(`File ${fileName} exists`);
         }
     }
 
@@ -276,6 +276,11 @@ class Migration {
         await fs.writeFile(target, contents ?? "");
     }
 
+    public async getContents(file: string) {
+        const target = join(this._targetDir, file);
+        return String(await fs.readFile(target));
+    }
+
     public async pushLine(file: string, line: string) {
         const target = join(this._targetDir, file);
         const data = String(await fs.readFile(target));
@@ -321,6 +326,16 @@ class Migration {
         await fs.writeFile(target, JSON.stringify(newData ?? data, null, JSON_INDENT));
     }
 
+    public async getContentsJSON<Src = Data>(file: string) {
+        const target = join(this._targetDir, file);
+        return JSON.parse(String(await fs.readFile(target))) as Src;
+    }
+
+    /**
+     * Updates package.json contents at given path
+     * @param objPath - path to object within package.json
+     * @param updater - updater function
+     */
     public async updatePath(objPath: GetSetPath, updater: ContentsUpdater) {
         const current = get(this._pkg, objPath);
         const newValue = await updater(String(current));
@@ -392,9 +407,17 @@ class Migration {
 
     /**
      * Runs `yarn` within created library
+     * @deprecated Use `pnpm` instead
      */
     public yarn() {
         return this.run("yarn");
+    }
+
+    /**
+     * Runs `pnpm i` within created library
+     */
+    public pnpm() {
+        return this.run("pnpm", ["i"]);
     }
 
     /**

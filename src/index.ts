@@ -44,6 +44,7 @@ const copyList: CopyList = {
     "tsconfig.cjs.json": "tsconfig.cjs.json",
     "tsconfig.lint.json": "tsconfig.lint.json",
     "tsconfig.json": "tsconfig.json",
+    "tsconfig.esm.json": "tsconfig.esm.json",
     "pagesconfig.json": "pagesconfig.json",
     "typedoc.cjs": "typedoc.cjs",
     "tutorials/Test.md": "tutorials/Test.md",
@@ -136,14 +137,15 @@ const copyList: CopyList = {
     else {
         await mig.removeAnyDependency("husky");
         await mig.updatePath("husky", () => undefined);
+        await mig.updatePath("scripts.prepare", () => undefined);
     }
 
     if (useJsx) {
         await migrateJsx(targetDir);
-        // includes yarn
+        // includes pnpm
     }
     else {
-        await mig.yarn();
+        await mig.pnpm();
     }
 
     console.info("");

@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.11.0] - 2023-07-06
+### Added
+- lib: resolve ts paths in files - dir and extensionless imports are now safe (but blocked by eslint)
+### Changed
+- lib: tsconfig files now includes .esm version always
+- lib: make tsconfig.json a common file to extend from
+- lib: replaced yarn with pnpm
+### Fixed
+- lib: `prepare` script invalid when not having a git repo
+- lib: babel config filename different on jsx and non-jsx libs, name is unified now
+- lib: invalid npm ignore for babel config
+- lib: removed flow version setting from eslint in jsx, causing pile of warnings on eslint
+
 ## [3.10.0] - 2023-06-03
 ### Changed
 - lib: bumped some dependencies

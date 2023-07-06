@@ -1,22 +1,22 @@
 {
   "name": "ts-library-template",
-  "version": "3.10.0",
+  "version": "3.11.0",
   "repository": "git@github.com:dzek69/ts-library-template.git",
   "license": "MIT",
   "scripts": {
     "test": "NODE_ENV=test jest",
     "docs": "typedoc src/index.ts --skipErrorChecking --out docs --includeVersion",
-    "compile": "yarn compile:esm && yarn compile:cjs",
-    "compile:esm": "rm -rf esm && tsc && node ./build-scripts/compile.esm.after.mjs",
+    "compile": "pnpm compile:esm && pnpm compile:cjs",
+    "compile:esm": "rm -rf esm && tsc --project tsconfig.esm.json && node ./build-scripts/compile.esm.after.mjs",
     "compile:cjs": "rm -rf dist && tsc --project tsconfig.cjs.json && node ./build-scripts/compile.cjs.after.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx,.mjs",
-    "lint:fix": "yarn lint --fix",
-    "prepack": "yarn compile",
-    "prepublishOnly": "yarn audit && yarn lint && yarn test && yarn docs",
+    "lint:fix": "pnpm lint --fix",
+    "prepack": "pnpm compile",
+    "prepublishOnly": "pnpm audit && pnpm lint && pnpm test && pnpm docs",
     "prepare": "husky install",
     "start:dev": "nodemon",
-    "start:dev:compatibility": "TS_NODE_FILES=true yarn start:dev",
+    "start:dev:compatibility": "TS_NODE_FILES=true pnpm start:dev",
     "updates": "npx --yes npm-check-updates --dep prod",
     "updates:dev": "npx --yes npm-check-updates --dep dev",
     "updates:all": "npx --yes npm-check-updates"
@@ -36,7 +36,7 @@
     "tslib": "./dist/index.js"
   },
   "dependencies": {
-    "@ezez/utils": "^1.7.0",
+    "@ezez/utils": "^1.9.0",
     "empty-dir": "^3.0.0",
     "fs-extra": "^11.1.1",
     "semver": "^7.5.1"
@@ -71,7 +71,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "yarn prepublishOnly && yarn compile"
+      "pre-push": "pnpm prepublishOnly && pnpm compile"
     }
   }
 }

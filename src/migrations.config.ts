@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import path from "path";
 
-import { ensureArray } from "@ezez/utils";
+import { ensureArray, removeCommonProperties } from "@ezez/utils";
 import fs from "fs-extra";
 
 import type { Migration } from "./Migration";
@@ -1284,6 +1284,145 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.10.0",
+        nextVersion: "3.11.0",
+        aggresive: "compile.esm.after.mjs & compile.cjs.after.mjs build scripts will be overwritten",
+        steps: [
+            {
+                name: "fix prepare script having husky without husky",
+                fn: async (mig) => {
+                    mig.assertNoAnyDependency("husky", new Error("husky dependency found, fix not needed"));
+                    await mig.updatePath("scripts.prepare", () => undefined);
+                },
+            },
+            {
+                name: "make copy of tsconfig for esm building",
+                fn: async (mig) => {
+                    await mig.assertNoFile(
+                        "tsconfig.esm.json", new Error("tsconfig.esm.json already exists, fix not needed"),
+                    );
+
+                    await mig.copy("tsconfig.json", "tsconfig.esm.json");
+                    mig.assertScript(
+                        "compile:esm", "rm -rf esm && tsc && node ./build-scripts/compile.esm.after.mjs",
+                        new Error("Can't update compile:esm script because it was modified"),
+                    );
+                    await mig.setScript(
+                        "compile:esm",
+                        "rm -rf esm && tsc --project tsconfig.esm.json && node ./build-scripts/compile.esm.after.mjs",
+                    );
+                },
+            },
+            {
+                name: "add resolving typescript paths on build",
+                fn: async (mig) => {
+                    await mig.addDevDependency("resolve-tspaths", "^0.8.14");
+                    await mig.copy("template/build-scripts/utils.mjs", "build-scripts/utils.mjs");
+                    await mig.copy(
+                        "template/build-scripts/compile.cjs.after.mjs", "build-scripts/compile.cjs.after.mjs",
+                    );
+                    await mig.copy(
+                        "template/build-scripts/compile.esm.after.mjs", "build-scripts/compile.esm.after.mjs",
+                    );
+                },
+            },
+            {
+                name: "unify babel config file name",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.assertFile("babel.config.js");
+                    await mig.rename("babel.config.js", "babel.config.cjs");
+                },
+            },
+            {
+                name: "fix babel config file name in npm ignore",
+                fn: async (mig) => {
+                    await mig.replaceLine(".npmignore", "/babel.config.js", "/babel.config.cjs");
+                },
+            },
+            {
+                name: "fix invalid babel config",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.updateContents("babel.config.cjs", (contents) => {
+                        const lineToFix = `extensions: [".js", ".jsx", ".es", ".es6", ".mjs", "ts", "tsx"]`;
+                        if (!contents.includes(lineToFix)) {
+                            throw new Error("babel.config.js has been modified, fix can't be applied");
+                        }
+                        return contents.replace(
+                            lineToFix,
+                            `extensions: [".js", ".jsx", ".es", ".es6", ".mjs", ".ts", ".tsx"]`,
+                        );
+                    });
+                },
+            },
+            {
+                name: "remove flow version from eslint settings",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.updateContentsJSON<EslintRc>(".eslintrc.json", (data, set) => {
+                        if (!data.settings?.react.flowVersion) {
+                            throw new Error("Can't find flowVersion in eslint settings");
+                        }
+                        // eslint-disable-next-line no-param-reassign
+                        delete data.settings.react.flowVersion;
+                        return data;
+                    });
+                },
+            },
+            {
+                name: "clean up tsconfig files",
+                fn: async (mig) => {
+                    const base = await mig.getContentsJSON<TSConfigJson>("tsconfig.json");
+                    const esm = await mig.getContentsJSON<TSConfigJson>("tsconfig.esm.json");
+                    const cjs = await mig.getContentsJSON<TSConfigJson>("tsconfig.cjs.json");
+                    const lint = await mig.getContentsJSON<TSConfigJson>("tsconfig.lint.json");
+                    removeCommonProperties(
+                        base as Record<string, unknown>, esm as Record<string, unknown>,
+                        cjs as Record<string, unknown>, lint as Record<string, unknown>,
+                    );
+                    removeCommonProperties(
+                        base.compilerOptions!, esm.compilerOptions!, cjs.compilerOptions!, lint.compilerOptions!,
+                    );
+
+                    await mig.updateContentsJSON("tsconfig.esm.json", () => ({
+                        extends: ["./tsconfig.json"],
+                        ...esm,
+                    }));
+                    await mig.updateContentsJSON("tsconfig.cjs.json", () => ({
+                        extends: ["./tsconfig.json"],
+                        ...cjs,
+                    }));
+                    await mig.updateContentsJSON("tsconfig.lint.json", () => ({
+                        extends: ["./tsconfig.json"],
+                        ...lint,
+                        exclude: [],
+                    }));
+                },
+            },
+            {
+                name: "update jsx config in tsconfig file",
+                fn: async (mig) => {
+                    await mig.updateContentsJSON<TSConfigJson>("tsconfig.json", (base) => {
+                        if (base.compilerOptions) {
+                            // eslint-disable-next-line no-param-reassign
+                            base.compilerOptions.jsx = "react-jsx";
+                        }
+                        return base;
+                    });
+                },
+            },
+            {
+                name: "replace yarn with pnpm",
+                fn: async (mig) => {
+                    await mig.remove("yarn.lock");
+                    await mig.remove("node_modules");
+                    await mig.pnpm();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {
@@ -1320,6 +1459,12 @@ const jsxMigration: JSXVersionMigration = {
                     };
                 });
                 await mig.updateContentsJSON<TSConfigJson>("tsconfig.cjs.json", tsconfig => {
+                    return {
+                        ...tsconfig,
+                        include: [...(tsconfig.include ?? []), "next-env.d.ts"],
+                    };
+                });
+                await mig.updateContentsJSON<TSConfigJson>("tsconfig.esm.json", tsconfig => {
                     return {
                         ...tsconfig,
                         include: [...(tsconfig.include ?? []), "next-env.d.ts"],
@@ -1373,7 +1518,7 @@ const jsxMigration: JSXVersionMigration = {
                 await mig.remove("babel.config.cjs");
 
                 await mig.addDevDependency("babel-plugin-module-resolver", "^4.1.0");
-                await mig.copy("template/jsx/babel.config.js", "babel.config.js");
+                await mig.copy("template/jsx/babel.config.cjs", "babel.config.cjs");
 
                 await mig.deletePath("type");
             },
@@ -1416,7 +1561,6 @@ const jsxMigration: JSXVersionMigration = {
                             createClass: "createReactClass",
                             pragma: "React",
                             version: "detect",
-                            flowVersion: "detect",
                         },
                         propWrapperFunctions: [],
                     };
@@ -1426,9 +1570,9 @@ const jsxMigration: JSXVersionMigration = {
             },
         },
         {
-            name: "yarn install",
+            name: "pnpm install",
             fn: async (mig) => {
-                await mig.yarn();
+                await mig.pnpm();
             },
         },
     ],

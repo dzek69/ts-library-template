@@ -8,7 +8,7 @@
     "test": "NODE_ENV=test jest",
     "docs": "typedoc src/index.ts --skipErrorChecking --out docs --includeVersion",
     "compile": "yarn compile:esm && yarn compile:cjs",
-    "compile:esm": "rm -rf esm && tsc && node ./build-scripts/compile.esm.after.mjs",
+    "compile:esm": "rm -rf esm && tsc --project tsconfig.esm.json && node ./build-scripts/compile.esm.after.mjs",
     "compile:cjs": "rm -rf dist && tsc --project tsconfig.cjs.json && node ./build-scripts/compile.cjs.after.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx,.mjs",
@@ -55,6 +55,7 @@
     "must": "^0.13.4",
     "nodemon": "^2.0.22",
     "prettier": "^2.8.8",
+    "resolve-tspaths": "^0.8.14",
     "ts-node": "^10.9.1",
     "typedoc": "^0.23.28",
     "typescript": "^5.1.3"

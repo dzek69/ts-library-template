@@ -7,7 +7,7 @@ module.exports = {
         [
             "module-resolver",
             {
-                extensions: [".js", ".jsx", ".es", ".es6", ".mjs", "ts", "tsx"],
+                extensions: [".js", ".jsx", ".es", ".es6", ".mjs", ".ts", ".tsx"],
                 resolvePath(sourcePath, currentFile, opts) {
                     if (!sourcePath.startsWith("./") && !sourcePath.startsWith("../")) {
                         return sourcePath;

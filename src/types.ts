@@ -45,10 +45,20 @@ interface TSConfigJson {
     compilerOptions?: {
         [key: string]: unknown;
         noImplicitOverride?: boolean;
+        jsx?: string;
     };
 }
 
-type EslintRc = Linter.BaseConfig;
+type EslintRc = Linter.BaseConfig & {
+    settings?: {
+        react: {
+            createClass?: string;
+            pragma?: string;
+            version?: string;
+            flowVersion?: string;
+        };
+    };
+};
 
 export type {
     PackageJson,
