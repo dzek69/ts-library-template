@@ -315,6 +315,18 @@ class Migration {
         await fs.writeFile(target, newLines.join("\n"));
     }
 
+    /**
+     * Removes line from file. It trims lines and value before comparing.
+     */
+    public async removeLine(file: string, line: string) {
+        const target = join(this._targetDir, file);
+        const data = String(await fs.readFile(target));
+        const lines = data.split("\n");
+
+        const newLines = lines.filter(s => s.trim() !== line.trim());
+        await fs.writeFile(target, newLines.join("\n"));
+    }
+
     public async updateContentsJSON<Src = Data, Target = Src>(file: string, updater: JSONContentsUpdater<Src, Target>) {
         const target = join(this._targetDir, file);
         const data = JSON.parse(String(await fs.readFile(target))) as Src;

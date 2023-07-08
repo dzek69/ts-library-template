@@ -38,7 +38,6 @@ const copyList: CopyList = {
     "test": "test",
     ".editorconfig": ".editorconfig",
     ".eslintrc.json": ".eslintrc.json",
-    "babel.config.cjs": "babel.config.cjs",
     "jest.config.cjs": "jest.config.cjs",
     "nodemon.json": "nodemon.json",
     "tsconfig.cjs.json": "tsconfig.cjs.json",

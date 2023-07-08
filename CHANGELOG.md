@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.11.1] - 2023-07-08
+### Changed
+- lib: deps update
+- lib: jest config update so it doesnt contain deprecated options
+- self: deps update
+### Fixed
+- lib: issues with babel config file introduced in 3.11.0
+- lib: resolve-tspaths crashing when paths empty
+
 ## [3.11.0] - 2023-07-06
 ### Added
 - lib: resolve ts paths in files - dir and extensionless imports are now safe (but blocked by eslint)

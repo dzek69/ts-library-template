@@ -5,7 +5,9 @@ import { ensureArray, removeCommonProperties } from "@ezez/utils";
 import fs from "fs-extra";
 
 import type { Migration } from "./Migration";
-import type { PagesConfigJson, EslintRc, TSConfigJson, NewPagesConfigJson } from "./types";
+import type { PagesConfigJson, EslintRc, TSConfigJson, NewPagesConfigJson, JestConfig } from "./types";
+
+import { parse, stringify } from "./module-exports-parser.js";
 
 interface MigrationStep {
     name: string;
@@ -1423,6 +1425,141 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.11.0",
+        nextVersion: "3.11.1",
+        steps: [
+            {
+                name: "update babel core",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/core", "^7.22.8");
+                },
+            },
+            {
+                name: "update babel preset env",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-env", "^7.22.7");
+                },
+            },
+            {
+                name: "update babel preset typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-typescript", "^7.22.5");
+                },
+            },
+            {
+                name: "update eslint base config",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@dzek69/eslint-config-base", "^2.5.0");
+                },
+            },
+            {
+                name: "update eslint import config",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@dzek69/eslint-config-import", "^1.3.0");
+                },
+            },
+            {
+                name: "update eslint import typescript config",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@dzek69/eslint-config-import-typescript", "^1.0.1");
+                },
+            },
+            {
+                name: "update eslint typescript config",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@dzek69/eslint-config-typescript", "^1.1.1");
+                },
+            },
+            {
+                name: "update eslint",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("eslint", "^8.44.0");
+                },
+            },
+            {
+                name: "update eslint typescript plugin",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@typescript-eslint/eslint-plugin", "^5.61.0");
+                },
+            },
+            {
+                name: "update eslint typescript parser",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@typescript-eslint/parser", "^5.61.0");
+                },
+            },
+            {
+                name: "update jest",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("jest", "^29.6.1");
+                },
+            },
+            {
+                name: "fix babel config file issues",
+                fn: async (mig) => {
+                    await mig.remove("babel.config.cjs");
+                    await mig.copy("test/babel.config.cjs", "test/babel.config.cjs");
+                    await mig.removeLine(".npmignore", "/babel.config.cjs");
+                },
+            },
+            {
+                name: "update jest config",
+                fn: async (mig) => {
+                    const txt = await mig.getContents("jest.config.cjs");
+                    const data = parse<JestConfig>(txt);
+                    if (data.testURL) {
+                        if (!data.testEnvironmentOptions) {
+                            data.testEnvironmentOptions = {};
+                        }
+                        data.testEnvironmentOptions.url = data.testURL;
+                        delete data.testURL;
+                    }
+                    if (!data.transform) {
+                        data.transform = {};
+                    }
+                    data.transform["\\.[jt]sx?$"] = ["babel-jest", { configFile: "./test/babel.config.cjs" }];
+                    await mig.updateContents("jest.config.cjs", () => stringify(data));
+                },
+            },
+            {
+                name: "fix resolve-tspaths crash",
+                fn: async (mig) => {
+                    await mig.updateContentsJSON<TSConfigJson>("tsconfig.json", (data) => {
+                        if (!data.compilerOptions) {
+                            throw new Error("No compiler options in tsconfig.json");
+                        }
+                        if (!data.compilerOptions.paths) {
+                            // eslint-disable-next-line no-param-reassign
+                            data.compilerOptions.paths = {};
+                        }
+                        return data;
+                    });
+                },
+            },
+            {
+                name: "update next",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("next", "^13.4.9");
+                },
+            },
+            {
+                name: "update react",
+                jsx: true,
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("react", "^18.2.0");
+                    await mig.safelyUpgradeDependency("react-dom", "^18.2.0");
+                },
+            },
+            {
+                name: "pnpm install",
+                fn: async (mig) => {
+                    await mig.pnpm();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {
@@ -1432,14 +1569,14 @@ const jsxMigration: JSXVersionMigration = {
         {
             name: "add react",
             fn: async (mig) => {
-                await mig.addDependency("react", "^17.0.2");
-                await mig.addDependency("react-dom", "^17.0.2");
+                await mig.addDependency("react", "^18.2.0");
+                await mig.addDependency("react-dom", "^18.2.0");
             },
         },
         {
             name: "add next",
             fn: async (mig) => {
-                await mig.addDevDependency("next", "^11.1.0");
+                await mig.addDevDependency("next", "^13.4.9");
             },
         },
         {
@@ -1494,8 +1631,8 @@ const jsxMigration: JSXVersionMigration = {
         {
             name: "add types",
             fn: async (mig) => {
-                await mig.addDevDependency("@types/react", "^17.0.4");
-                await mig.addDevDependency("@types/react-dom", "^17.0.3");
+                await mig.addDevDependency("@types/react", "^18.2.14");
+                await mig.addDevDependency("@types/react-dom", "^18.2.6");
             },
         },
         {
@@ -1515,11 +1652,6 @@ const jsxMigration: JSXVersionMigration = {
         {
             name: "setup babel",
             fn: async (mig) => {
-                await mig.remove("babel.config.cjs");
-
-                await mig.addDevDependency("babel-plugin-module-resolver", "^4.1.0");
-                await mig.copy("template/jsx/babel.config.cjs", "babel.config.cjs");
-
                 await mig.deletePath("type");
             },
         },
@@ -1535,8 +1667,8 @@ const jsxMigration: JSXVersionMigration = {
         {
             name: "add eslint config for react",
             fn: async (mig) => {
-                await mig.addDevDependency("eslint-plugin-react", "^7.24.0");
-                await mig.addDevDependency("@dzek69/eslint-config-react", "^1.2.2");
+                await mig.addDevDependency("eslint-plugin-react", "^7.32.2");
+                await mig.addDevDependency("@dzek69/eslint-config-react", "^1.3.0");
 
                 await mig.updateContentsJSON<EslintRc>(".eslintrc.json", (data, set) => {
                     if (!data.extends) {

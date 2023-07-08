@@ -49,6 +49,15 @@ interface TSConfigJson {
     };
 }
 
+interface JestConfig {
+    collectCoverageFrom?: string[];
+    setupFiles?: string[];
+    moduleNameMapper?: Record<string, string>;
+    transform?: Record<string, string | [string, Record<string, string>]>;
+    testEnvironmentOptions?: Record<string, string>;
+    testURL?: string;
+}
+
 type EslintRc = Linter.BaseConfig & {
     settings?: {
         react: {
@@ -65,5 +74,6 @@ export type {
     PagesConfigJson,
     NewPagesConfigJson,
     TSConfigJson,
+    JestConfig,
     EslintRc,
 };
