@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.11.2] - 2023-09-19
+### Fixed
+- lib: upgrade path of 3.11.0 - should pnpm import before install
+- lib: scripts using yarn instead of pnpm
+### Changed
+- lib: deps update
+- self: deps update
+
 ## [3.11.1] - 2023-07-08
 ### Changed
 - lib: deps update

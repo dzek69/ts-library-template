@@ -15,8 +15,9 @@ interface PackageJson extends Record<string, unknown> {
     };
     dependencies?: Data;
     devDependencies?: Data;
-    scripts: Data;
+    scripts: Record<string, string>;
     exports?: Record<string, Record<string, string>>;
+    husky?: Record<string, unknown>;
 }
 
 interface PagesConfigJson {

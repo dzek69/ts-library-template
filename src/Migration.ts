@@ -155,6 +155,12 @@ class Migration {
         await this.setPath([type, name], version);
     }
 
+    /**
+     * Safely upgrades any dependency.
+     * It checks if given dependency is installed and if it is not higher than given version.
+     * @param name - package name
+     * @param version - target version
+     */
     public async safelyUpgradeDependency(name: string, version: string) {
         const type = this.findDependency(name);
         if (!type) {
@@ -177,6 +183,10 @@ class Migration {
         await this.setPath([type, name], version);
     }
 
+    /**
+     * Detects if given dependency is a dependency or devDependency or not present
+     * @param name
+     */
     public findDependency(name: string) {
         const deps = this._pkg.dependencies ?? {};
         const dev = this._pkg.devDependencies ?? {};

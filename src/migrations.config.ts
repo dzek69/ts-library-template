@@ -350,7 +350,7 @@ const migrationsConfig: VersionMigration[] = [
                         throw new Error("`prepublishOnly` is removed, can't update.");
                     }
 
-                    if ((mig.pkg.scripts.prepublishOnly as string).includes("audit")) {
+                    if ((mig.pkg.scripts.prepublishOnly).includes("audit")) {
                         throw new Error("It seems `prepublishOnly` contains audit script already, can't update.");
                     }
 
@@ -1418,6 +1418,7 @@ const migrationsConfig: VersionMigration[] = [
             {
                 name: "replace yarn with pnpm",
                 fn: async (mig) => {
+                    await mig.run("pnpm", ["import"]);
                     await mig.remove("yarn.lock");
                     await mig.remove("node_modules");
                     await mig.pnpm();
@@ -1550,6 +1551,95 @@ const migrationsConfig: VersionMigration[] = [
                 fn: async (mig) => {
                     await mig.safelyUpgradeDependency("react", "^18.2.0");
                     await mig.safelyUpgradeDependency("react-dom", "^18.2.0");
+                },
+            },
+            {
+                name: "pnpm install",
+                fn: async (mig) => {
+                    await mig.pnpm();
+                },
+            },
+        ],
+    },
+    {
+        version: "3.11.1",
+        nextVersion: "3.11.2",
+        steps: [
+            {
+                name: "upgrade scripts from yarn/npm to pnpm",
+                fn: async (mig) => {
+                    await mig.updatePkg(pkg => {
+                        Object.keys(pkg.scripts).forEach((key) => {
+                            // eslint-disable-next-line no-param-reassign
+                            pkg.scripts[key] = pkg.scripts[key]!.replace(/yarn( run)? /g, "pnpm run ");
+                            // eslint-disable-next-line no-param-reassign
+                            pkg.scripts[key] = pkg.scripts[key]!.replace(/npx --yes/g, "pnpm dlx");
+                        });
+
+                        if (pkg.husky?.hooks && typeof pkg.husky.hooks === "object") {
+                            const hooks = pkg.husky.hooks as Record<string, unknown>;
+                            Object.keys(hooks).forEach((key) => {
+                                if (typeof hooks[key] !== "string") {
+                                    return;
+                                }
+                                hooks[key] = (hooks[key] as string).replace(/yarn( run)? /g, "pnpm run ");
+                            });
+                        }
+                    });
+                },
+            },
+            {
+                name: "update @babel/core",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/core", "^7.22.20");
+                },
+            },
+            {
+                name: "update @babel/preset-env",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-env", "^7.22.20");
+                },
+            },
+            {
+                name: "update @babel/preset-typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-typescript", "^7.22.15");
+                },
+            },
+            {
+                name: "update @types/jest",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@types/jest", "^29.5.5");
+                },
+            },
+            {
+                name: "update eslint-plugin-import",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("eslint-plugin-import", "^2.28.1");
+                },
+            },
+            {
+                name: "update jest",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("jest", "^29.7.0");
+                },
+            },
+            {
+                name: "update nodemon",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("nodemon", "^3.0.1");
+                },
+            },
+            {
+                name: "update resolve-tspaths",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("resolve-tspaths", "^0.8.15");
+                },
+            },
+            {
+                name: "update typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("typescript", "^5.2.2");
                 },
             },
             {
