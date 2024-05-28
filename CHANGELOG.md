@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+## [3.12.0] - 2024-05-28
+### Fixed
+- lib: backwards fixed upgrade script from 3.8.0: git initializing when already inside a git root
+- lib: audit script
+### Changed
+- lib: eslint configuration now uses `@ezez/eslint` single package with zero config setup
+- lib: deps update
+### Dev
+- self: deps update
+
 ## [3.11.2] - 2023-09-19
 ### Fixed
 - lib: upgrade path of 3.11.0 - should pnpm import before install

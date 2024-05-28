@@ -15,8 +15,8 @@ class Question {
     public async ask(question: string, def = ""): Promise<string> {
         this._createIfNeeded();
         return new Promise(resolve => {
-            this._cli!.question(question + " ", name => {
-                resolve(name.trim() || def);
+            this._cli!.question(question + " ", nname => {
+                resolve(nname.trim() || def);
             });
         });
     }

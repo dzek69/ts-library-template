@@ -1,7 +1,8 @@
+import must from "must";
+
 describe("index.spec", () => {
     it("works", () => {
-        true.must.be.true();
+        must(true).be.true();
     });
 });
 
-export {};

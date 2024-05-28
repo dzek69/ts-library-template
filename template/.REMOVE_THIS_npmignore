@@ -11,5 +11,5 @@
 /nodemon.json
 /.editorconfig
 /tsconfig.*
-/.eslintrc.json
+/eslint.config.mjs
 /pagesconfig.json

@@ -58,7 +58,7 @@ const applyMigrations = async ({ migration, migrations, updateVersion }: ApplyOp
 };
 
 const aggressiveMessage = async (migrations: VersionMigration[]) => {
-    const aggressive = migrations.map(m => m.aggresive).filter(Boolean) as string[];
+    const aggressive = migrations.map(m => m.aggressive).filter(Boolean) as string[];
     if (!aggressive.length) {
         return true;
     }
@@ -66,8 +66,8 @@ const aggressiveMessage = async (migrations: VersionMigration[]) => {
     console.info("WARNING: Aggressive upgrade detected!");
     console.info(
         "Aggressive upgrade means that customizations applied over previously-generated library may be lost "
-            + "or that library won't work after upgrading without further changes to the code. Please verify this list "
-            + "of POTENTIAL POSSIBLE issues and accept the upgrade progress:",
+        + "or that library won't work after upgrading without further changes to the code. Please verify this list "
+        + "of POTENTIAL POSSIBLE issues and accept the upgrade progress:",
     );
     console.info(aggressive.map(a => "- " + a.trim()).join("\n"));
     console.info("");

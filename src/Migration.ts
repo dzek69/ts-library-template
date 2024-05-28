@@ -142,14 +142,17 @@ class Migration {
         await this.setScript(scriptName, newValue);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     public async addDependency(name: string, version: string) {
         await this.setPath(["dependencies", name], version);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     public async addDevDependency(name: string, version: string) {
         await this.setPath(["devDependencies", name], version);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     public async upgradeDependency(name: string, version: string, defaultType: Dep = "dependencies") {
         const type = this.findDependency(name) ?? defaultType;
         await this.setPath([type, name], version);
@@ -161,7 +164,7 @@ class Migration {
      * @param name - package name
      * @param version - target version
      */
-    public async safelyUpgradeDependency(name: string, version: string) {
+    public async safelyUpgradeDependency(name: string, version: string) { // eslint-disable-line @typescript-eslint/no-shadow
         const type = this.findDependency(name);
         if (!type) {
             throw new Error(`Cannot upgrade ${name}, because it is not installed`);
@@ -175,7 +178,7 @@ class Migration {
         if (!minNewVersion) {
             throw new TypeError(`Cannot parse next version of ${name}`);
         }
-        if (!semver.gt(minNewVersion, minVersion)) {
+        if (semver.lt(minNewVersion, minVersion)) {
             throw new Error(
                 `Currently installed version of ${name} ${minVersion.version} is higher than ${minNewVersion.version}`,
             );
@@ -187,7 +190,7 @@ class Migration {
      * Detects if given dependency is a dependency or devDependency or not present
      * @param name
      */
-    public findDependency(name: string) {
+    public findDependency(name: string) { // eslint-disable-line @typescript-eslint/no-shadow
         const deps = this._pkg.dependencies ?? {};
         const dev = this._pkg.devDependencies ?? {};
         if (deps[name]) {
@@ -273,10 +276,18 @@ class Migration {
     }
 
     /**
-     * Renames files within created library
+     * Renames files within the created library
      */
     public async rename(source: string, target: string) {
         await fs.rename(join(this._targetDir, source), join(this._targetDir, target));
+    }
+
+    /**
+     * Deletes a file/folder within the created library
+     * If the file does not exist it silently ignores it
+     */
+    public async delete(file: string) {
+        await fs.remove(join(this._targetDir, file));
     }
 
     public async updateContents(file: string, updater: ContentsUpdater) {
@@ -384,24 +395,24 @@ class Migration {
         this.assertNoPath(["scripts", scriptName], error);
     }
 
-    public assertNoDependency(name: string, error: Error) {
+    public assertNoDependency(name: string, error: Error) { // eslint-disable-line @typescript-eslint/no-shadow
         if (this._pkg.dependencies && name in this._pkg.dependencies) {
             throw error;
         }
     }
 
-    public assertNoDevDependency(name: string, error: Error) {
+    public assertNoDevDependency(name: string, error: Error) { // eslint-disable-line @typescript-eslint/no-shadow
         if (this._pkg.devDependencies && name in this._pkg.devDependencies) {
             throw error;
         }
     }
 
-    public assertNoAnyDependency(name: string, error: Error) {
+    public assertNoAnyDependency(name: string, error: Error) { // eslint-disable-line @typescript-eslint/no-shadow
         this.assertNoDependency(name, error);
         this.assertNoDevDependency(name, error);
     }
 
-    public assertDevDependency(name: string, version: string | null, error: Error) {
+    public assertDevDependency(name: string, version: string | null, error: Error) { // eslint-disable-line @typescript-eslint/no-shadow
         if (
             !this._pkg.devDependencies
             || (
@@ -413,15 +424,15 @@ class Migration {
         }
     }
 
-    public async removeDependency(name: string) {
+    public async removeDependency(name: string) { // eslint-disable-line @typescript-eslint/no-shadow
         await this.deletePath(["dependencies", name]);
     }
 
-    public async removeDevDependency(name: string) {
+    public async removeDevDependency(name: string) { // eslint-disable-line @typescript-eslint/no-shadow
         await this.deletePath(["devDependencies", name]);
     }
 
-    public async removeAnyDependency(name: string) {
+    public async removeAnyDependency(name: string) { // eslint-disable-line @typescript-eslint/no-shadow
         const depType = this.findDependency(name);
         if (!depType) { return; }
         await this.deletePath([depType, name]);

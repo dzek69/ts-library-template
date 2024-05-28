@@ -18,7 +18,7 @@ const extractProjectName = (givenPath: string) => {
     if (path.isAbsolute(givenPath)) {
         return path.basename(givenPath);
     }
-    return path.normalize(givenPath).replace(/\\/g, "/").split("/").filter(v => v !== "..").join("/");
+    return path.normalize(givenPath).replace(/\\/ug, "/").split("/").filter(v => v !== "..").join("/");
 };
 
 const INDENT = 2;
@@ -37,7 +37,7 @@ const copyList: CopyList = {
 
     "test": "test",
     ".editorconfig": ".editorconfig",
-    ".eslintrc.json": ".eslintrc.json",
+    "eslint.config.mjs": "eslint.config.mjs",
     "jest.config.cjs": "jest.config.cjs",
     "nodemon.json": "nodemon.json",
     "tsconfig.cjs.json": "tsconfig.cjs.json",

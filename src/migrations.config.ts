@@ -22,7 +22,7 @@ interface JSXMigrationStep extends MigrationStep {
 interface VersionMigration {
     version: string;
     nextVersion: string;
-    aggresive?: string;
+    aggressive?: string;
     steps: MigrationStep[];
 }
 
@@ -53,7 +53,7 @@ const migrationsConfig: VersionMigration[] = [
     {
         version: "3.0.0",
         nextVersion: "3.0.1",
-        aggresive: "compile.esm.after.mjs build script will be overwritten",
+        aggressive: "compile.esm.after.mjs build script will be overwritten",
         steps: [
             {
                 name: "update eslint config",
@@ -99,7 +99,7 @@ const migrationsConfig: VersionMigration[] = [
     {
         version: "3.0.2",
         nextVersion: "3.0.3",
-        aggresive: "tsconfig files will be overwritten",
+        aggressive: "tsconfig files will be overwritten",
         steps: [
             {
                 name: "update tsconfig files",
@@ -303,16 +303,16 @@ const migrationsConfig: VersionMigration[] = [
                         }
 
                         // eslint-disable-next-line no-param-reassign
-                        obj.groups[0].pages = files.map(name => {
-                            if (!name.toLowerCase().endsWith(".md")) {
+                        obj.groups[0].pages = files.map(nname => {
+                            if (!nname.toLowerCase().endsWith(".md")) {
                                 return { title: "", source: "" };
                             }
 
-                            const justName = name.replace(/\.md$/i, "");
+                            const justName = nname.replace(/\.md$/ui, "");
 
                             return {
                                 title: justName,
-                                source: "./tutorials/" + name,
+                                source: "./tutorials/" + nname,
                             };
                         }).filter(p => Boolean(p.title));
 
@@ -699,7 +699,7 @@ const migrationsConfig: VersionMigration[] = [
                     mig.assertScript(
                         "docs",
                         "typedoc src/index.ts --out docs --listInvalidSymbolLinks --includes tutorials"
-                            + " --theme pages-plugin --includeVersion",
+                        + " --theme pages-plugin --includeVersion",
                         new Error("Can't update docs script because it was modified"),
                     );
                     await mig.setScript(
@@ -755,7 +755,7 @@ const migrationsConfig: VersionMigration[] = [
                     const pkg = mig.pkg;
                     const good = "typedoc src/index.ts --out docs --includeVersion --pluginPages ./pagesconfig.json";
                     const bugged = "typedoc src/index.ts --out docs --listInvalidSymbolLinks --includes tutorials"
-                            + " --theme pages-plugin --includeVersion";
+                        + " --theme pages-plugin --includeVersion";
 
                     if (pkg.scripts.docs === good) {
                         // all good
@@ -832,7 +832,7 @@ const migrationsConfig: VersionMigration[] = [
                     await mig.setScript(
                         "docs",
                         "typedoc src/index.ts --skipErrorChecking "
-                            + "--out docs --includeVersion --pluginPages ./pagesconfig.json",
+                        + "--out docs --includeVersion --pluginPages ./pagesconfig.json",
                     );
                 },
             },
@@ -1021,6 +1021,10 @@ const migrationsConfig: VersionMigration[] = [
                 fn: async (mig) => {
                     const repo = mig.pkg.repository;
                     if (!repo) {
+                        return;
+                    }
+                    const initAlreadyDone = await mig.run("git", ["status"]).then(() => true, () => false);
+                    if (initAlreadyDone) {
                         return;
                     }
                     await mig.run("git", ["init"]);
@@ -1289,7 +1293,7 @@ const migrationsConfig: VersionMigration[] = [
     {
         version: "3.10.0",
         nextVersion: "3.11.0",
-        aggresive: "compile.esm.after.mjs & compile.cjs.after.mjs build scripts will be overwritten",
+        aggressive: "compile.esm.after.mjs & compile.cjs.after.mjs build scripts will be overwritten",
         steps: [
             {
                 name: "fix prepare script having husky without husky",
@@ -1571,9 +1575,9 @@ const migrationsConfig: VersionMigration[] = [
                     await mig.updatePkg(pkg => {
                         Object.keys(pkg.scripts).forEach((key) => {
                             // eslint-disable-next-line no-param-reassign
-                            pkg.scripts[key] = pkg.scripts[key]!.replace(/yarn( run)? /g, "pnpm run ");
+                            pkg.scripts[key] = pkg.scripts[key]!.replace(/yarn( run)? /ug, "pnpm run ");
                             // eslint-disable-next-line no-param-reassign
-                            pkg.scripts[key] = pkg.scripts[key]!.replace(/npx --yes/g, "pnpm dlx");
+                            pkg.scripts[key] = pkg.scripts[key]!.replace(/npx --yes/ug, "pnpm dlx");
                         });
 
                         if (pkg.husky?.hooks && typeof pkg.husky.hooks === "object") {
@@ -1582,7 +1586,7 @@ const migrationsConfig: VersionMigration[] = [
                                 if (typeof hooks[key] !== "string") {
                                     return;
                                 }
-                                hooks[key] = (hooks[key] as string).replace(/yarn( run)? /g, "pnpm run ");
+                                hooks[key] = (hooks[key] as string).replace(/yarn( run)? /ug, "pnpm run ");
                             });
                         }
                     });
@@ -1645,6 +1649,79 @@ const migrationsConfig: VersionMigration[] = [
             {
                 name: "pnpm install",
                 fn: async (mig) => {
+                    await mig.pnpm();
+                },
+            },
+        ],
+    },
+    {
+        version: "3.11.2",
+        nextVersion: "3.12.0",
+        aggressive: "Eslint config will be completely overridden if you use the default @dzek69/eslint-* packages."
+        + " This should only matter to you if you added some custom overrides.",
+        steps: [
+            {
+                name: "upgrade eslint config",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "@dzek69/eslint-config-base", null, new Error("You don't use @dzek69/eslint-* config"),
+                    );
+                    await mig.removeAnyDependency("@dzek69/eslint-config-base");
+                    await mig.removeAnyDependency("@dzek69/eslint-config-import");
+                    await mig.removeAnyDependency("@dzek69/eslint-config-import-typescript");
+                    await mig.removeAnyDependency("@dzek69/eslint-config-typescript");
+                    await mig.removeAnyDependency("@typescript-eslint/eslint-plugin");
+                    await mig.removeAnyDependency("@typescript-eslint/parser");
+                    await mig.removeAnyDependency("eslint");
+                    await mig.removeAnyDependency("eslint-plugin-import");
+                    await mig.addDevDependency("@ezez/eslint", "^0.0.6");
+
+                    const eslintFiles = [".eslintrc.json", ".eslintrc.js", ".eslintrc.cjs", ".eslintrc.mjs"];
+
+                    await Promise.all(eslintFiles.map((file) => mig.delete(file)));
+
+                    await mig.copy("eslint.config.mjs");
+
+                    await mig.updateContents(".npmignore", c => {
+                        return c.split("\n")
+                            .filter(line => !eslintFiles.map(s => "/" + s).includes(line.trim()))
+                            .concat(["/eslint.config.mjs"])
+                            .join("\n");
+                    });
+
+                    await mig.setScript("lint", "eslint src");
+                },
+            },
+            {
+                name: "fix audit script",
+                fn: async (mig) => {
+                    await mig.updatePath("scripts.prepublishOnly", value => {
+                        return value.replace("pnpm run audit", "pnpm audit");
+                    });
+                },
+            },
+            {
+                name: "update prettier",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("prettier", "^3.2.5");
+                },
+            },
+            {
+                name: "update ts-node",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("ts-node", "^10.9.2");
+                },
+            },
+            {
+                name: "update typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("typescript", "^5.4.5");
+                },
+            },
+            {
+                name: "pnpm install",
+                fn: async (mig) => {
+                    await mig.sortPackageJson();
                     await mig.pnpm();
                 },
             },
@@ -1742,6 +1819,7 @@ const jsxMigration: JSXVersionMigration = {
         {
             name: "setup babel",
             fn: async (mig) => {
+                // TODO this makes the lib to be non-esm, find workaround
                 await mig.deletePath("type");
             },
         },
@@ -1752,43 +1830,6 @@ const jsxMigration: JSXVersionMigration = {
                     "start:dev", "nodemon", new Error("Can't update start:dev script because it was modified"),
                 );
                 await mig.setScript("start:dev", "next dev");
-            },
-        },
-        {
-            name: "add eslint config for react",
-            fn: async (mig) => {
-                await mig.addDevDependency("eslint-plugin-react", "^7.32.2");
-                await mig.addDevDependency("@dzek69/eslint-config-react", "^1.3.0");
-
-                await mig.updateContentsJSON<EslintRc>(".eslintrc.json", (data, set) => {
-                    if (!data.extends) {
-                        throw new TypeError("Invalid eslint configuration file");
-                    }
-
-                    if (data.extends) {
-                        if (data.extends === "string") {
-                            // eslint-disable-next-line no-param-reassign
-                            data.extends = ensureArray(data.extends);
-                        }
-                        if (Array.isArray(data.extends)) { // check just for TS, always true
-                            data.extends.push("@dzek69/eslint-config-react");
-                        }
-                    }
-
-                    set(["rules", "react/prop-types"], "off");
-                    // eslint-disable-next-line no-param-reassign
-                    data.settings = {
-                        ...data.settings,
-                        react: {
-                            createClass: "createReactClass",
-                            pragma: "React",
-                            version: "detect",
-                        },
-                        propWrapperFunctions: [],
-                    };
-
-                    return data;
-                });
             },
         },
         {

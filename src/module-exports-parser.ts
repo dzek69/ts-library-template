@@ -9,7 +9,7 @@ const parse = <T>(source: string) => {
         s = s.slice(0, -1);
     }
 
-    if (/^module\.exports *=/.test(s)) {
+    if (/^module\.exports *=/u.test(s)) {
         const equal = s.indexOf("=");
         s = s.slice(equal + 1);
         s = s.trim();
