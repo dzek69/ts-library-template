@@ -1,19 +1,20 @@
 {
   "name": "ts-library-template",
-  "version": "3.12.0",
+  "version": "3.13.0",
   "repository": "git@github.com:dzek69/ts-library-template.git",
   "license": "MIT",
   "scripts": {
     "test": "NODE_ENV=test jest",
     "docs": "typedoc src/index.ts --skipErrorChecking --out docs --includeVersion",
-    "compile": "pnpm run compile:esm && pnpm run compile:cjs",
+    "compile": "pnpm run compile:esm && pnpm run compile:cjs && pnpm run compile:extras",
     "compile:esm": "rm -rf esm && tsc --project tsconfig.esm.json && node ./build-scripts/compile.esm.after.mjs",
     "compile:cjs": "rm -rf dist && tsc --project tsconfig.cjs.json && node ./build-scripts/compile.cjs.after.mjs",
+    "compile:extras": "tsc --skipLibCheck --resolveJsonModule --target es2020 --module esnext --moduleResolution node typedoc.ts && mv typedoc.js typedoc.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "lint:fix": "pnpm run lint --fix",
     "prepack": "pnpm run compile",
-    "prepublishOnly": "pnpm run lint && pnpm run test && pnpm run docs",
+    "prepublishOnly": "pnpm audit && pnpm run lint && pnpm run test && pnpm run docs",
     "prepare": "husky install",
     "start:dev": "nodemon",
     "start:dev:compatibility": "TS_NODE_FILES=true pnpm run start:dev",
@@ -44,11 +45,10 @@
     "semver": "^7.5.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.22.20",
-    "@babel/preset-env": "^7.22.20",
-    "@babel/preset-typescript": "^7.22.15",
-    "@ezez/eslint": "^0.0.6",
-    "@knodes/typedoc-plugin-pages": "^0.23.4",
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "@babel/preset-typescript": "^7.24.7",
+    "@ezez/eslint": "^0.0.8",
     "@types/empty-dir": "^2.0.1",
     "@types/fs-extra": "^11.0.2",
     "@types/jest": "^29.5.5",
@@ -60,7 +60,7 @@
     "nodemon": "^3.0.1",
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
-    "typedoc": "^0.23.28",
+    "typedoc": "0.26.0-beta.2",
     "typescript": "^5.4.5"
   },
   "husky": {

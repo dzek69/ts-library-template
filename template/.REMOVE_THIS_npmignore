@@ -13,3 +13,7 @@
 /tsconfig.*
 /eslint.config.mjs
 /pagesconfig.json
+/typedoc.cjs
+/.prettierrc.json
+/.prettierignore
+/.husky

@@ -1727,6 +1727,78 @@ const migrationsConfig: VersionMigration[] = [
             },
         ],
     },
+    {
+        version: "3.12.0",
+        nextVersion: "3.13.0",
+        steps: [
+            {
+                jsx: true,
+                name: "remove react related eslint leftovers",
+                fn: async (mig) => {
+                    mig.assertDevDependency("@ezez/eslint", null, new Error("You don't use @ezez/eslint"));
+                    await mig.removeAnyDependency("@dzek69/eslint-config-react");
+                    await mig.removeAnyDependency("eslint-plugin-react");
+                },
+            },
+            {
+                name: "bump @ezez/eslint",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@ezez/eslint", "^0.0.8");
+                },
+            },
+            {
+                name: "upgrade typedoc config file",
+                fn: async (mig) => {
+                    mig.assertDevDependency("typedoc", null, new Error("You don't use typedoc"));
+
+                    await mig.removeAnyDependency("@knodes/typedoc-plugin-pages");
+                    await mig.addDevDependency("typedoc", "0.26.0-beta.2");
+                    await mig.delete("typedoc.cjs");
+                    await mig.copy("typedoc.mjs");
+                    await mig.pushLine(".npmignore", "/typedoc.mjs");
+                },
+            },
+            {
+                name: "update CHANGELOG format mention to EZEZ Changelog",
+                fn: async (mig) => {
+                    await mig.updateContents("CHANGELOG.md", (contents) => {
+                        return contents.replace(
+                            "[Keep a Changelog](http://keepachangelog.com/en/1.0.0/)",
+                            "[EZEZ Changelog](https://ezez.dev/changelog/)",
+                        );
+                    });
+                },
+            },
+            {
+                name: "add prettier files to npm ignore",
+                fn: async (mig) => {
+                    await mig.pushLine(".npmignore", "/.prettierignore");
+                    await mig.pushLine(".npmignore", "/.prettierrc.json");
+                },
+            },
+            {
+                name: "add .husky to npm ignore",
+                fn: async (mig) => {
+                    await mig.pushLine(".npmignore", "/.husky");
+                },
+            },
+            {
+                name: "update babel",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/core", "^7.24.7");
+                    await mig.safelyUpgradeDependency("@babel/preset-env", "^7.24.7");
+                    await mig.safelyUpgradeDependency("@babel/preset-typescript", "^7.24.7");
+                },
+            },
+            {
+                name: "pnpm install",
+                fn: async (mig) => {
+                    await mig.sortPackageJson();
+                    await mig.pnpm();
+                },
+            },
+        ],
+    },
 ];
 
 const jsxMigration: JSXVersionMigration = {
