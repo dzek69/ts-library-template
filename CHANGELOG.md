@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [UNRELEASED]
 (nothing yet)
 
+RESTORE TYPEDOC.CJS
+
 ## [3.13.0] - 2024-06-10
 ### Changed
 - lib: CHANGELOG mentioned format updated to EZEZ Changelog
