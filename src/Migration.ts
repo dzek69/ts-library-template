@@ -2,6 +2,7 @@
 import child from "child_process";
 import path, { join } from "path";
 
+import JSON5 from "json5";
 import fs from "fs-extra";
 import { get, set, sortProps } from "@ezez/utils";
 import semver from "semver";
@@ -350,7 +351,7 @@ class Migration {
 
     public async updateContentsJSON<Src = Data, Target = Src>(file: string, updater: JSONContentsUpdater<Src, Target>) {
         const target = join(this._targetDir, file);
-        const data = JSON.parse(String(await fs.readFile(target))) as Src;
+        const data = JSON5.parse<unknown>(String(await fs.readFile(target))) as Src;
         const newData = await updater(
             data,
             // @ts-expect-error `set` needs better typings
@@ -361,7 +362,7 @@ class Migration {
 
     public async getContentsJSON<Src = Data>(file: string) {
         const target = join(this._targetDir, file);
-        return JSON.parse(String(await fs.readFile(target))) as Src;
+        return JSON5.parse<unknown>(String(await fs.readFile(target))) as Src;
     }
 
     /**

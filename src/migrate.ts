@@ -29,7 +29,7 @@ const applyMigrations = async ({ migration, migrations, updateVersion }: ApplyOp
 
     const err = (e: Error) => {
         skipped++;
-        console.warn("✖", e.message);
+        console.warn("❌", e.message);
     };
 
     for (let i = 0; i < migrations.length; i++) {

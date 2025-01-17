@@ -1,10 +1,26 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [EZEZ Changelog](https://ezez.dev/changelog/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+and this project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html) - it's hard to determine
+what is an addition and what is a fix.
+Totally breaking changes will bump major version though.
 
 ## [UNRELEASED]
 (nothing yet)
+
+## [3.14.0] - 2025-01-17
+### Fixed
+- self: regression: crashing one step when upgrading to 3.9.0 (happens on 3.13.0 only)
+- self: upgrading from 3.11.0 to 3.11.2 crashing on upgrading scripts
+- lib: ts-node crashing, because some esm compatibility error
+- lib: jest config, crashing on modules ending with `js`
+### Changed
+- lib: @ezez/eslint version bump, removes requirement for installing `eslint` manually
+- lib: deps update
+- self: make errors more visible with emoji on error
+- parse all json files with json5, to avoid crashing, stringify with just JSON
+### Dev
+- self: deps update
 
 ## [3.13.0] - 2024-06-10
 ### Changed

@@ -42,12 +42,13 @@ interface NewPagesConfigJson {
 }
 
 interface TSConfigJson {
-    include?: string[];
-    compilerOptions?: {
+    "include"?: string[];
+    "compilerOptions"?: {
         [key: string]: unknown;
         noImplicitOverride?: boolean;
         jsx?: string;
     };
+    "ts-node"?: object;
 }
 
 interface JestConfig {

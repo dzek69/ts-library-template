@@ -1299,7 +1299,7 @@ const migrationsConfig: VersionMigration[] = [
                 name: "fix prepare script having husky without husky",
                 fn: async (mig) => {
                     mig.assertNoAnyDependency("husky", new Error("husky dependency found, fix not needed"));
-                    await mig.updatePath("scripts.prepare", () => undefined);
+                    await mig.deleteScript("prepare");
                 },
             },
             {
@@ -1577,7 +1577,7 @@ const migrationsConfig: VersionMigration[] = [
                             // eslint-disable-next-line no-param-reassign
                             pkg.scripts[key] = pkg.scripts[key]!.replace(/yarn( run)? /ug, "pnpm run ");
                             // eslint-disable-next-line no-param-reassign
-                            pkg.scripts[key] = pkg.scripts[key]!.replace(/npx --yes/ug, "pnpm dlx");
+                            pkg.scripts[key] = pkg.scripts[key].replace(/npx --yes/ug, "pnpm dlx");
                         });
 
                         if (pkg.husky?.hooks && typeof pkg.husky.hooks === "object") {
@@ -1586,7 +1586,7 @@ const migrationsConfig: VersionMigration[] = [
                                 if (typeof hooks[key] !== "string") {
                                     return;
                                 }
-                                hooks[key] = (hooks[key] as string).replace(/yarn( run)? /ug, "pnpm run ");
+                                hooks[key] = hooks[key].replace(/yarn( run)? /ug, "pnpm run ");
                             });
                         }
                     });
@@ -1658,7 +1658,7 @@ const migrationsConfig: VersionMigration[] = [
         version: "3.11.2",
         nextVersion: "3.12.0",
         aggressive: "Eslint config will be completely overridden if you use the default @dzek69/eslint-* packages."
-        + " This should only matter to you if you added some custom overrides.",
+            + " This should only matter to you if you added some custom overrides.",
         steps: [
             {
                 name: "upgrade eslint config",
@@ -1795,6 +1795,130 @@ const migrationsConfig: VersionMigration[] = [
                 fn: async (mig) => {
                     await mig.sortPackageJson();
                     await mig.pnpm();
+                },
+            },
+        ],
+    },
+    {
+        version: "3.13.0",
+        nextVersion: "3.14.0",
+        steps: [
+            {
+                name: "update eslint",
+                fn: async (mig) => {
+                    mig.assertDevDependency(
+                        "@ezez/eslint", null, new Error("You don't use @ezez/eslint"),
+                    );
+
+                    await mig.upgradeDependency("@ezez/eslint", "^0.3.0");
+                    await mig.removeAnyDependency("eslint");
+
+                    mig.assertScript(
+                        "lint", "eslint src", new Error("Can't update lint script because it was modified"),
+                    );
+                    await mig.setScript("lint", "ezlint src");
+                },
+            },
+            {
+                name: "update @babel/core",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/core", "^7.26.0");
+                },
+            },
+            {
+                name: "update @babel/preset-env",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-env", "^7.26.0");
+                },
+            },
+            {
+                name: "update @babel/preset-typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@babel/preset-typescript", "^7.26.0");
+                },
+            },
+            {
+                name: "update @types/jest",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("@types/jest", "^29.5.14");
+                },
+            },
+            {
+                name: "update fs-extra",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("fs-extra", "^11.3.0");
+                },
+            },
+            {
+                name: "update nodemon",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("nodemon", "^3.1.9");
+                },
+            },
+            {
+                name: "update prettier",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("prettier", "^3.4.2");
+                },
+            },
+            {
+                name: "update resolve-tspaths",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("resolve-tspaths", "^0.8.23");
+                },
+            },
+            {
+                name: "update typedoc",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("typedoc", "0.27.6");
+                },
+            },
+            {
+                name: "update typescript",
+                fn: async (mig) => {
+                    await mig.safelyUpgradeDependency("typescript", "^5.7.3");
+                },
+            },
+            {
+                name: "pnpm install",
+                fn: async (mig) => {
+                    await mig.sortPackageJson();
+                    await mig.pnpm();
+                },
+            },
+            {
+                name: "update ts-node config",
+                fn: async (mig) => {
+                    await mig.updateContentsJSON<TSConfigJson>("tsconfig.json", (data) => {
+                        if ("ts-node" in data) {
+                            throw new Error("ts-node is already in tsconfig.json, won't update");
+                        }
+                        // eslint-disable-next-line no-param-reassign
+                        data["ts-node"] = {
+                            experimentalSpecifierResolution: "node",
+                            transpileOnly: true,
+                            esm: true,
+                        };
+                        return data;
+                    });
+                },
+            },
+            {
+                name: "fix jest config module mapping",
+                fn: async (mig) => {
+                    await mig.updateContents("jest.config.cjs", (data) => {
+                        if (!data.includes(`'^(.*)\\.js$': '$1'`) && !data.includes(`"^(.*)\\.js$": "$1"`)) {
+                            // no known mapping to fix?
+                            if (data.includes(`"^(.*)\\\\.js$": "$1"`) || data.includes(`'^(.*)\\\\.js$': '$1'`)) {
+                                // already fixed, do nothing
+                                return;
+                            }
+                            throw new Error("Can't find jest mapping to fix, is it already fixed?");
+                        }
+                        return data
+                            .replace(`'^(.*)\\.js$': '$1'`, `"^(.*)\\\\.js$": "$1"`)
+                            .replace(`"^(.*)\\.js$": "$1"`, `"^(.*)\\\\.js$": "$1"`);
+                    });
                 },
             },
         ],
